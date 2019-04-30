@@ -8,11 +8,12 @@ Eventually, a service that scrapes WWU's classfinder and offers a mirror databas
 
 ## Current ToDo:
 - Make basic structure of data fetching work
-- Set up database to hold data for analytic requests
+- Connect updater to dynamoDB on AWS
 - Add constraints for requests to WWU servers (possibly in a separate client file)
 - Add purpose-built queries for different times (default query for regular updates on future quarters, high-priority queries for registration season
+- check AWS traffic tier limitations and check if requests need to be metered
 - set up time after which no more updates for a given quarter are included in the update cycle (after add/drop penalties or end of quarter, for example)
 
 ## Planned Features:
-- databaseUpdate runs every so often, updating a noSQL server running on AWS
+- databaseUpdate runs every so often, updating a noSQL server (dynamoDB) running on AWS
 - client website or app makes requests either to WWU's classfinder or to the AWS mirror, depending on the nature of the query and latency priority (around registration time, latency is always top priority, whereas fetching a dataset for big data analysis on classes held in a certain building for the past 15 years is not)
