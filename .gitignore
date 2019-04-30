@@ -1,0 +1,11 @@
+.settings/**
+bin/**
+libs/**
+target/**
+.classpath
+.project
+*.mwb
+*.bak
+*.sql
+*.txt
+*.html
