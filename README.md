@@ -2,7 +2,7 @@
 
 #### Don't ask about the name
 
-It was what I came up with on the spot, trying to avoid sounding like the other takes on Classfinder out there; I remembered this meme about how tech companies are all just taking a word ending in -er and making it -r (Flikr, Grinder, Tumblr, etc) and I thought it was funny. Yeah.
+It was what I came up with on the spot, trying to avoid sounding like the other takes on Classfinder out there; I remembered this meme about how tech companies are all just taking a word ending in -er and making it -r (Flikr, Grindr, Tumblr, etc) and I thought it was funny. Yeah.
 
 Eventually, a service that scrapes WWU's classfinder and offers a mirror database with more diverse and accessible tools.
 
