@@ -2,6 +2,7 @@
 bin/**
 libs/**
 target/**
+src/bin**
 .classpath
 .project
 *.mwb
@@ -9,3 +10,4 @@ target/**
 *.sql
 *.txt
 *.html
+/target/

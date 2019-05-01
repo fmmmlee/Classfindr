@@ -1,5 +1,11 @@
-//Matthew Lee
-//Spring 2019
+/*
+ * 
+ * Matthew Lee
+ * Spring 2019
+ * 
+ */
+
+import java.util.List;
 public class Course {
 	int crn;
 	int year;
@@ -14,7 +20,11 @@ public class Course {
 	String startdate;
 	String enddate;
 	String attr;
-	String meettimes;
+	//TODO: Figure out how to dynamically deal with potential multiple meeting times and places both here and in the database
+	//I'm kind of thinking maybe for here, a map with char days and a list of ints, which would be start and end times?
+	List<String> meettimes;
+	List<Integer> starthrs;
+	List<Integer> endhrs;
 	String building;
 	int credits;
 	String extrachgs;
