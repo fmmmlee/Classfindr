@@ -16,11 +16,15 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 
 public class ParseClassfinderDoc{
 
@@ -41,15 +45,9 @@ public class ParseClassfinderDoc{
 	
 	
 	//parsing the HTML from CallUniServer into Course objects
-    public static int parseDocument(Document unsorted, String currentTerm){
-    	File fancyTester = new File("fancyTester.txt");
-    	PrintWriter fancyWrite = null;
-		try {
-			fancyWrite = new PrintWriter("fancyTester.txt", "UTF-8");
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    public static List<HashMap<String, AttributeValue>> parseDocument(Document unsorted, String currentTerm){
+    	List<HashMap<String, AttributeValue>> toBeReturned = new ArrayList();
+    	
     	int numClasses = 0;
         int err = 0;
         /*
@@ -162,9 +160,15 @@ public class ParseClassfinderDoc{
             		timesLine(temp, columns.nextAll());
             	//or restrictions
             	} else if (checker.contains("Restrictions:")) {
-            			temp.restrictions += columns.get(1).text();
+            			if(temp.restrictions == null)
+            				temp.restrictions = columns.get(1).text();
+            			else
+            				temp.restrictions += columns.get(1).text();
             	//or prereqs
             	} else if (checker.contains("Prerequisites:")) {
+            		if(temp.prereqs == null)
+            			temp.prereqs = columns.get(1).text();
+            		else
             			temp.prereqs += columns.get(1).text();
             	//or extra meetings
             	} else if (checker.matches("[MTWRF]+(\\s)[0-9]+:.*") || (checker.contains("TBA") && columns.size() > 2)) {
@@ -177,13 +181,12 @@ public class ParseClassfinderDoc{
             	i++;
             }
             	
-            	System.out.println(temp.generateValueStr());	
-            	fancyWrite.println(temp.generateValueStr());
+        		toBeReturned.add(temp.generateItemPush());
+            	System.out.println(temp.generateValueStr());
             	numClasses++;
         }
-        fancyWrite.close();
         System.out.println(numClasses);	     	
-        return err;
+        return toBeReturned;
     }
 
     
@@ -269,7 +272,7 @@ public class ParseClassfinderDoc{
     	}
     	
     	if (columns.size() == 4)
-    		input.extrachgs += columns.get(3).text();	
+    		input.extrachgs = columns.get(3).text();	
     }
 
     
