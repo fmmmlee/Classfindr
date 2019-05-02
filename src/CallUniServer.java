@@ -11,11 +11,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 public class CallUniServer {
-
-	
-	
-	
-	private static final int MB = 1000000;
 	
     //Headers for the request to WWU servers
     private static final String HOST = "admin.wwu.edu";

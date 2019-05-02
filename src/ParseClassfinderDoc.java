@@ -10,12 +10,6 @@
 //TODO: Good error checking analysis throughout whole package
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,10 +40,9 @@ public class ParseClassfinderDoc{
 	
 	//parsing the HTML from CallUniServer into Course objects
     public static List<HashMap<String, AttributeValue>> parseDocument(Document unsorted, String currentTerm){
-    	List<HashMap<String, AttributeValue>> toBeReturned = new ArrayList();
+    	List<HashMap<String, AttributeValue>> toBeReturned = new ArrayList<HashMap<String, AttributeValue>>();
     	
     	int numClasses = 0;
-        int err = 0;
         /*
          * 
          * TODO: Database Integration
@@ -79,7 +72,6 @@ public class ParseClassfinderDoc{
         //first table is solely column names, second has actual data
         Element table = unsorted.select("table").get(1);
         Elements rows = table.select("tr");
-        
         
         //iterating line-by-line
         for(int i = 3; i < rows.size(); i++) 
@@ -144,7 +136,13 @@ public class ParseClassfinderDoc{
             		}
             			
             	}
-            		
+            	
+            	//
+            	if(columns.size() < 1) {
+            		i++;
+            		continue;
+            	}
+            	
             	String checker = columns.get(0).text();            		        		
             	//checking for subjects
         		if(checker.contains("CLOSED:") || subjects.parallelStream().anyMatch(checker :: contains)  && columns.size() == 7){
@@ -182,7 +180,6 @@ public class ParseClassfinderDoc{
             }
             	
         		toBeReturned.add(temp.generateItemPush());
-            	System.out.println(temp.generateValueStr());
             	numClasses++;
         }
         System.out.println(numClasses);	     	
