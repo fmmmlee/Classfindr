@@ -10,8 +10,12 @@
 //TODO: Good error checking analysis throughout whole package
 
 
-import java.io.IOException;
-import java.sql.SQLException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import org.jsoup.nodes.Document;
@@ -20,7 +24,7 @@ import org.jsoup.select.Elements;
 
 public class ParseClassfinderDoc{
 
-	//TODO: Read this from a JSON or YAML which gets updated from the list which can be found by looking at the page source for https://admin.wwu.edu/pls/wwis/wwsktime.SelClass
+	//TODO: swap these lists for a JSON or YAML which gets updated from the list which can be found by looking at the page source for https://admin.wwu.edu/pls/wwis/wwsktime.SelClass
 	private static List<String> subjects = Arrays.asList("A/HI", "ACCT", "AECI", "AHE", "AMST", "ANTH", "ARAB", "ART",
 			"ASTR", "AUAP", "BIOL", "BNS", "C/AM", "C2C", "CD", "CHEM", "CHIN", "CISS", "CLST", "COMM",
 			"CSCI", "CSD", "CSEC", "DNC", "DSCI", "DSGN", "EAST", "ECE", "ECON", "EDAD", "EDUC", "EE",
@@ -32,9 +36,21 @@ public class ParseClassfinderDoc{
 			"PORT", "PSY", "RC", "RECR", "REL", "RUSS", "SALI", "SCED", "SEC", "SMNR", "SOC", "SPAN", "SPED",
 			"TESL", "THTR", "VHCL", "WGSS");
 	
+	private static List<String> attributes = Arrays.asList("ACOM", "ACGM", "BCOM", "BCGM", "CCOM", "HUM", "LSCI",
+			"SCI", "QSR", "SSC", "CF", "CF-E", "CPST", "FIG", "FYE", "OL", "SL", "TRVL", "WP1", "WP2", "WP3");
+	
 	
 	//parsing the HTML from CallUniServer into Course objects
-    public static int parseDocument(Document unsorted) throws SQLException {
+    public static int parseDocument(Document unsorted, String currentTerm){
+    	File fancyTester = new File("fancyTester.txt");
+    	PrintWriter fancyWrite = null;
+		try {
+			fancyWrite = new PrintWriter("fancyTester.txt", "UTF-8");
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	int numClasses = 0;
         int err = 0;
         /*
          * 
@@ -43,7 +59,25 @@ public class ParseClassfinderDoc{
          * DynamoDbClient or DynamoDbAsyncClient
          *
          */
-
+        // year/term setup
+        int year = Integer.parseInt(currentTerm.substring(0, 4));
+        String term = "";
+    	switch (currentTerm.substring(4,6))
+    	{
+    	case "40":
+    		term = "fall";
+    		break;
+    	case "30":
+    		term = "summer";
+    		break;
+    	case "20":
+    		term = "spring";
+    		break;
+    	case "10":
+    		term = "winter";
+    		break;
+    	}
+    	
         //first table is solely column names, second has actual data
         Element table = unsorted.select("table").get(1);
         Elements rows = table.select("tr");
@@ -51,81 +85,128 @@ public class ParseClassfinderDoc{
         
         //iterating line-by-line
         for(int i = 3; i < rows.size(); i++) 
-        {	int courseLine = -1;
-        	//skipping empty rows
-        	if(rows.get(i) == null)
-        		continue;
+        {	
+        	boolean courseLine = false;
+       	
         	Elements columns = rows.get(i).select("td");
         	Course temp = new Course();
         	
-        	//empty rows
+        	//year
+        	temp.year = year;
+        	//term
+           	temp.term = term;
+        	
+        	//CRN
+        	temp.crn = Integer.parseInt(columns.select("input").attr("value"));
+        	
+        	//clean up empty columns and skip row if empty
+        	cleanRow(columns);
         	if(columns.size() < 1)
-        		continue;
-        	
-        	//TODO: put in a while loop here in order to only work on one course until another course is reached, just increment i inside the loop
-        	//and throw away the structure after hitting another class and sending the current one to the database
-        	
-        	//removing empty table columns
-        	for(int j = 0; j < columns.size(); j++)
-        	{
-        		//grabbing crn, which is within a tag
-        		if(columns.get(j).select("input").attr("value") != "")
-        			temp.crn = Integer.parseInt(columns.get(j).select("input").attr("value"));
-        		//removing all blank columns
-        		if(!columns.get(j).text().matches(".*[(0-9)(A-Z)(a-z)]+.*"))
-        			columns.remove(j);
-        	}
-        	
-        	//empty rows
-        	if(columns.size() < 1)
-        		continue;
-        	
-        	for(int j = 0; j < columns.size(); j++)
-        	{
-        		System.out.println(columns.get(j).text());
-        	}
-        	
-        	System.out.println(columns.get(0).text());
-        	
-        	//grabs first 4 characters of column, which should be the 4-letter subject tag (e.g. CSCI or HNRS)
-        	//Consider making this a switch statement on columns.get(0).text()
-        	
-        	if(columns.get(0).text().length() > 1)
-        	{
-        		if(subjects.contains(columns.get(0).text().substring(0, 4)) && temp.subject == null){
-        			firstLine(temp, columns);
-        		} else if (columns.get(0).text().substring(0, 1) == "/s [MTWRF]") {
-        			secondLine(temp, columns);
-        		}
-        	}
-        	
-        	
-        	System.out.println(temp.generateValueStr());
-        	
-        	//String sqlQuery = " insert into courses " + temp.generateValueStr();
-        	
-        }
-        
-        
-        //close sql connection
-        //sqlConn.close();
-        
-    	return err;
+        		continue;        	
 
+        	//can condense this probably
+        	if(columns.get(0).text().contains("CLOSED:")){
+        		courseLine = true;
+        		temp.waitlist = true;
+        		columns.get(0).remove();
+        		columns = rows.get(i).select("td");
+        		cleanRow(columns);
+        		mainLine(temp, columns);
+        		i++;
+        	} else if(subjects.parallelStream().anyMatch(columns.get(0).text() :: contains) && columns.size() == 7 && courseLine == false)
+        	{
+        		courseLine = true;
+        		mainLine(temp, columns);
+        		i++;
+        	}
+        	
+        	//possibly change this to a separate method
+        	while(courseLine && i < rows.size())
+        	{
+        		columns = rows.get(i).select("td");
+            	cleanRow(columns);
+            	if(columns.size() < 1)
+            	{
+            		i++;
+            		continue;
+            	}
+            	
+            	
+            	//this clause is because apparently there are a fair few random &amp and &nbsp statements
+            	//that the classfinder table generation script drops around in places with actual information
+            	
+            	for(int k = 0; k < columns.size(); k++)
+            	{
+            		columns.get(k).text(columns.get(k).text().replaceAll("(\\&).*", ""));
+            		if(!containsANumeric(columns.get(k)))
+            		{
+            				columns.get(k).remove();
+            				columns = rows.get(i).select("td");
+            				cleanRow(columns);
+            		}
+            			
+            	}
+            		
+            	String checker = columns.get(0).text();            		        		
+            	//checking for subjects
+        		if(checker.contains("CLOSED:") || subjects.parallelStream().anyMatch(checker :: contains)  && columns.size() == 7){
+            		courseLine = false;
+            		//decrementing i so that when it increments again on next run of outer for loop mainLine() is triggered
+            		i--;
+            		break;
+            	//or attributes (I could try to merge the conditions with the day/times check but it's a bit tricky so I'm leaving it for now
+            	//TODO: this just checks for presence of attribute code and a column size (to avoid random hits from long descriptions)
+            	//need to nail down an empirical condition that will work in all situations
+            	} else if (attributes.parallelStream().anyMatch(checker :: contains) && columns.size() > 3) {
+            		temp.attr = columns.get(0).text();            			
+            		timesLine(temp, columns.nextAll());
+            	//or restrictions
+            	} else if (checker.contains("Restrictions:")) {
+            			temp.restrictions += columns.get(1).text();
+            	//or prereqs
+            	} else if (checker.contains("Prerequisites:")) {
+            			temp.prereqs += columns.get(1).text();
+            	//or extra meetings
+            	} else if (checker.matches("[MTWRF]+(\\s)[0-9]+:.*") || (checker.contains("TBA") && columns.size() > 2)) {
+            		timesLine(temp, columns);
+            	//for continuations of prereqs or special descriptions
+            	} else {
+            		temp.description += " " + checker;
+            	}
+
+            	i++;
+            }
+            	
+            	System.out.println(temp.generateValueStr());	
+            	fancyWrite.println(temp.generateValueStr());
+            	numClasses++;
+        }
+        fancyWrite.close();
+        System.out.println(numClasses);	     	
+        return err;
     }
+
     
     
-    static void firstLine(Course input, Elements columns)
-    {
-    	input.subject = columns.get(0).text().substring(0, 4);
-    	//getting the number (i.e. the "101" in "CSCI 101")
-    	String hold = columns.get(0).text();
-    	input.number = Integer.parseInt(hold.substring(5, hold.length()));
+    static void mainLine(Course input, Elements columns)
+    {    	
     	//description
     	input.description = columns.get(1).text();
+    	
+    	//course subject and number
+    	String hold = columns.get(0).text();
+    	String probSubj = hold.replaceAll("[^(A-Z)]+", "");
+    	if(probSubj.length() > 4)
+    	{
+    		input.subject = probSubj.substring(0, 4);
+    		input.description += " |Note: The class number of this class also has \'" + probSubj.substring(4, probSubj.length()) + "\' appended to it";
+    	} else {
+    		input.subject = probSubj;
+    	}
+    	input.number = Integer.parseInt(hold.replaceAll("\\D+",""));
     	//class capacity
     	input.capacity = Integer.parseInt(columns.get(2).text());
-    	//enrollment
+    	//enrollments
     	input.enrolled = Integer.parseInt(columns.get(3).text());
     	//available spots
     	input.available = Integer.parseInt(columns.get(4).text());
@@ -135,87 +216,83 @@ public class ParseClassfinderDoc{
     	
     	//start and end dates - eventually will be replaced with actual calendar/date class
     	String placeholder = columns.get(6).text();
+    	if(placeholder.contains("TBA"))
+    	{
+    		input.description += "|Note: Dates for this class have not yet been decided";
+    		return;
+    	}
     	input.startdate = placeholder.substring(0, 5);
     	input.enddate = placeholder.substring(6, 11);
-
     }
     
-    //unfinished
-    static void secondLine(Course input, Elements columns)
+
+    static void timesLine(Course input, Elements columns)
     {
+    	//meeting days and hours
     	String hold = columns.get(0).text();
-    	//TODO: Clean this up, it finds the end of the days-of-the-week section
-    	int ender = Math.max(Math.max(Math.max(Math.max(hold.indexOf('F'), hold.indexOf('R')), hold.indexOf('W')), hold.indexOf('T')), hold.indexOf('M'));
-    	//adding days to the list of meeting days
-    	input.meettimes.add(hold.substring(1, ender));
-    	String hours = hold.substring(ender+2, ender+12).replaceAll("!(0-9)", "");
-    	if(hold.substring(ender+14, ender+15) == "pm")
+    	
+    	String hours = hold.replaceAll("[^\\d+]", "");
+    	if(hold.contains("TBA"))
     	{
-    		input.starthrs.add(12 + Integer.parseInt(hours.substring(0, 3)));
-        	input.endhrs.add(12 + Integer.parseInt(hours.substring(4, 7)));
+    		input.description += "|Note: No class times at time of last update";
+    	} else if (!hold.matches("[MTWRF]+(\\s)[0-9]+:.*")) {
+    		input.description += "|Note: Nonstandard class time: " + hold;
+    		//dealing with am/pm
+    	} else if (hold.contains("am")) {
+    		input.starthrs.add(Integer.parseInt(hours.substring(0, 3)));
+        	input.endhrs.add(Integer.parseInt(hours.substring(4, 7)));
     	} else {
-    		input.starthrs.add(12 + Integer.parseInt(hours.substring(0, 3)));
-        	input.endhrs.add(12 + Integer.parseInt(hours.substring(4, 7)));
+    		//start time
+    		if(Integer.parseInt(hours.substring(0, 3)) > 900)
+    				input.starthrs.add(Integer.parseInt(hours.substring(0, 3)));
+    		else
+    			input.starthrs.add(1200 + Integer.parseInt(hours.substring(0, 3)));
+    		//end time
+    		if(Integer.parseInt(hours.substring(4, 7)) > 1100)
+    			input.endhrs.add(Integer.parseInt(hours.substring(4, 7)));
+    		else
+    			input.endhrs.add(1200 + Integer.parseInt(hours.substring(4, 7)));
     	}
     	
+    	input.meettimes.add(hold.replaceAll("[^(MTWRF)]+", ""));
     	
     	input.building = columns.get(1).text();
+    	//extra things that might not occur on all lines
+    	// -credits will be in every course but will not appear on a line for extra meetings
+    	// -extra charges may or may not be in a course
+    	if(columns.size() >= 3) {
+    		if(columns.get(2).text().contains("-"))
+    			input.description += "|Note: Credit value is variable, ranging from " + columns.get(2).text();
+    		else {
+    			input.credits = Integer.parseInt(columns.get(2).text().replaceAll("[^\\d+]", ""));
+    			}
+    	}
     	
-    	
-    	
+    	if (columns.size() == 4)
+    		input.extrachgs += columns.get(3).text();	
+    }
+
+    
+    //utility to remove columns consisting solely of whitespace/newlines
+    //could use just hasText() on the row itself, must check to see if it works here
+    static Elements cleanRow(Elements input) {
+    	for(int j = 0; j < input.size(); j++)
+    	{
+    		if(!input.hasText() || !containsANumeric(input.get(j)) || input.get(j).attr("class") == "ddheader")
+    		{
+    			input.remove(j);
+    			j--;
+    		}
+    	}
+    	return input;
     }
     
-
-    public static void main(String[] args) throws IOException, SQLException {
-
-    /*
-     Do the below every [time interval] depending on how intensive it is and how often database needs updates
-     (if making queries to University database in realtime for tools that already exist, and only doing building and data analytics with this database, latency becomes less of an issue)
-     
-    	make call
-    	
-    	parse file
-    	
-    	feed data into database
-    	
-    */
-    	
-    	Document unsorted = CallUniServer.defaultQuery();
-    	parseDocument(unsorted);
-    	
-        /* Each course also has a little option to view information about it, another POST request with just the CRN and a few hidden inputs. */
-
-        /*
-         * 
-         * Table (possible garbage rows between):
-         * [Beginning of class]
-         * empty column
-         * Classname
-         * Class description
-         * (dirty script form entry)
-         * some kind of input button, no useful info
-         * capacity
-         * enrolled
-         * available
-         * instructor
-         * dates
-         * 
-         * 
-         * [second row same class]
-         * &nbsp
-         * GUR/attributes
-         * days and hours
-         * Building
-         * Credits
-         * Extra charges
-         * 
-         * [possible extra row]
-         * &nbsp spanning 2 columns
-         * days and hours
-         * building
-         * 
-         */
+    //utility to check if an element has anything alphanumeric
+    static boolean containsANumeric(Element input)
+    {
+    	if(input.hasText() && input.text().matches(".*[(0-9)(A-Z)(a-z)]+.*") && input.text().replaceAll("\\&.*;.*", "").length() > 0){
+    		return true;
+    	}
+    	return false;
     }
-
-
 }

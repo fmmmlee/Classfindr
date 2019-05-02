@@ -39,11 +39,10 @@ public class CallUniServer {
                 instructor + "&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
     }
     
-    static Document defaultQuery() throws IOException
+    static Document fullTermQuery(String term) throws IOException
     {
-		String currentterm = "201940";
         String queryString = "sel_subj=dummy&sel_subj=dummy&sel_gur=dummy&sel_gur=dummy&sel_attr=dummy&sel_site=dummy&sel_day=dummy&sel_open=dummy&sel_crn=&term="
-        + currentterm + "&sel_gur=All&sel_attr=All&sel_site=All&sel_subj=CSCI&sel_inst=ANY&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
+        + term + "&sel_gur=All&sel_attr=All&sel_site=All&sel_subj=All&sel_inst=ANY&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
         String theUrl = ("https://admin.wwu.edu/pls/wwis/wwsktime.ListClass");
         org.jsoup.Connection serverCall = Jsoup.connect(theUrl);
         serverCall.header("Host", HOST);
@@ -58,7 +57,7 @@ public class CallUniServer {
         serverCall.header("Cookie", COOKIE);
         serverCall.header("Upgrade-Insecure-Requests", INSECURE_REQS);
         serverCall.requestBody(queryString);
-        serverCall.maxBodySize(10*MB);
+        serverCall.maxBodySize(0);
         return serverCall.post();
     }
 	

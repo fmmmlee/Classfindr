@@ -7,8 +7,12 @@
  * 
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+
+import org.apache.commons.io.FileUtils;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 public class databaseUpdate{
@@ -26,9 +30,15 @@ public class databaseUpdate{
     	feed data into database
     	
     */
+    	 /* Each course also has a little option to view information about it, another POST request with just the CRN and a few hidden inputs. */
     	
-    	Document unsorted = CallUniServer.defaultQuery();
-    	ParseClassfinderDoc.parseDocument(unsorted);
+    	//eventually will need to build update queries based on current term and analysis queries for old terms
+    	String term = "201920";
+    	Document unsorted = CallUniServer.fullTermQuery(term);
+    	File testfile = new File("testingSize.html");
+    	FileUtils.writeStringToFile(testfile, unsorted.outerHtml(), "UTF-8");
+    	//Document unsorted = Jsoup.parse(new File("testclean.html"), "UTF-8");
+    	ParseClassfinderDoc.parseDocument(unsorted, term);
     	
     }
 
