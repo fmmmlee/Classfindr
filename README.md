@@ -2,7 +2,7 @@
 
 Eventually, a service that scrapes WWU's classfinder and offers a mirror database with more diverse and accessible tools.
 
-Current status: Just connected to AWS; I'll probably test with different school terms in order to confirm universal functionality and then work on optimizing for efficiency and logical structure before moving on to data analysis tools.
+Current status: Just connected to AWS; I'll probably test with different school terms in order to confirm universal functionality and then work on optimizing for efficiency and logical structure before moving on to data analysis tools. I'll also need to write an API so others can access the DynamoDB database.
 
 ## Current ToDo:
 - Add constraints for requests to WWU servers (possibly in a separate client file)
