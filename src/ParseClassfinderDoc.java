@@ -12,13 +12,11 @@
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 
 public class ParseClassfinderDoc{
 
@@ -39,8 +37,9 @@ public class ParseClassfinderDoc{
 	
 	
 	//parsing the HTML from CallUniServer into Course objects
-    public static List<HashMap<String, AttributeValue>> parseDocument(Document unsorted, String currentTerm){
-    	List<HashMap<String, AttributeValue>> toBeReturned = new ArrayList<HashMap<String, AttributeValue>>();
+    public static List<Course> parseDocument(Document unsorted, String currentTerm){
+    	List<Course> toBeReturned = new ArrayList<Course>();
+    	
     	
     	int numClasses = 0;
         /*
@@ -51,7 +50,7 @@ public class ParseClassfinderDoc{
          *
          */
         // year/term setup
-        int year = Integer.parseInt(currentTerm.substring(0, 4));
+        String year = currentTerm.substring(0, 4);
         String term = "";
     	switch (currentTerm.substring(4,6))
     	{
@@ -81,14 +80,11 @@ public class ParseClassfinderDoc{
         	Elements columns = rows.get(i).select("td");
         	Course temp = new Course();
         	
-        	//year
-        	temp.year = year;
-        	//term
-           	temp.term = term;
         	
         	//CRN
-        	temp.crn = Integer.parseInt(columns.select("input").attr("value"));
-        	
+        	temp.courseInfo.put("crn", columns.select("input").attr("value"));
+        	temp.courseInfo.put("year", year);
+    		temp.courseInfo.put("term", term);
         	//clean up empty columns and skip row if empty
         	cleanRow(columns);
         	if(columns.size() < 1)
@@ -97,7 +93,7 @@ public class ParseClassfinderDoc{
         	//can condense this probably
         	if(columns.get(0).text().contains("CLOSED:")){
         		courseLine = true;
-        		temp.waitlist = true;
+        		temp.courseInfo.put("waitlist", "true");
         		columns.get(0).remove();
         		columns = rows.get(i).select("td");
         		cleanRow(columns);
@@ -154,32 +150,28 @@ public class ParseClassfinderDoc{
             	//TODO: this just checks for presence of attribute code and a column size (to avoid random hits from long descriptions)
             	//need to nail down an empirical condition that will work in all situations
             	} else if (attributes.parallelStream().anyMatch(checker :: contains) && columns.size() > 3) {
-            		temp.attr = columns.get(0).text();            			
+            		temp.courseInfo.put("attributes", columns.get(0).text());            			
             		timesLine(temp, columns.nextAll());
             	//or restrictions
-            	} else if (checker.contains("Restrictions:")) {
-            			if(temp.restrictions == null)
-            				temp.restrictions = columns.get(1).text();
-            			else
-            				temp.restrictions += columns.get(1).text();
+            	} else if (checker.contains("Restrictions:") && columns.size() > 1) {
+            		String curRestr = temp.courseInfo.get("restrictions");
+            		temp.courseInfo.put("restrictions", curRestr == null ? columns.get(1).text() : curRestr + " " + columns.get(1).text());
             	//or prereqs
-            	} else if (checker.contains("Prerequisites:")) {
-            		if(temp.prereqs == null)
-            			temp.prereqs = columns.get(1).text();
-            		else
-            			temp.prereqs += columns.get(1).text();
+            	} else if (checker.contains("Prerequisites:") && columns.size() > 1) {
+            		String curPre = temp.courseInfo.get("prerequisites");
+            		temp.courseInfo.put("prerequisites", curPre == null ? columns.get(1).text() : curPre + " " + columns.get(1).text());
             	//or extra meetings
             	} else if (checker.matches("[MTWRF]+(\\s)[0-9]+:.*") || (checker.contains("TBA") && columns.size() > 2)) {
             		timesLine(temp, columns);
             	//for continuations of prereqs or special descriptions
             	} else {
-            		temp.description += " " + checker;
+            		String curDes = temp.courseInfo.get("description");
+            		temp.courseInfo.put("description", curDes == null ? checker : curDes + checker);
             	}
-
             	i++;
             }
             	
-        		toBeReturned.add(temp.generateItemPush());
+        		toBeReturned.add(temp);
             	numClasses++;
         }
         System.out.println(numClasses);	     	
@@ -191,38 +183,42 @@ public class ParseClassfinderDoc{
     static void mainLine(Course input, Elements columns)
     {    	
     	//description
-    	input.description = columns.get(1).text();
+    	input.courseInfo.put("description", columns.get(1).text());
     	
     	//course subject and number
     	String hold = columns.get(0).text();
     	String probSubj = hold.replaceAll("[^(A-Z)]+", "");
     	if(probSubj.length() > 4)
     	{
-    		input.subject = probSubj.substring(0, 4);
-    		input.description += " |Note: The class number of this class also has \'" + probSubj.substring(4, probSubj.length()) + "\' appended to it";
+    		input.courseInfo.put("subject", probSubj.substring(0, 4));
+    		String curDes = input.courseInfo.get("description");
+    		String note = "Note: The class number of this class also has \'" + probSubj.substring(4, probSubj.length()) + "\' appended to it";
+    		input.courseInfo.put("description", curDes == null ? note : curDes + " |" + note);
     	} else {
-    		input.subject = probSubj;
+    		input.courseInfo.put("subject", probSubj);
     	}
-    	input.number = Integer.parseInt(hold.replaceAll("\\D+",""));
+    	input.courseInfo.put("number", hold.replaceAll("\\D+",""));
     	//class capacity
-    	input.capacity = Integer.parseInt(columns.get(2).text());
+    	input.courseInfo.put("capacity", columns.get(2).text());
     	//enrollments
-    	input.enrolled = Integer.parseInt(columns.get(3).text());
+    	input.courseInfo.put("enrolled", columns.get(3).text());
     	//available spots
-    	input.available = Integer.parseInt(columns.get(4).text());
+    	input.courseInfo.put("available", columns.get(4).text());
     	
     	//instructor name
-    	input.instructor = columns.get(5).text();
-    	
+    	input.courseInfo.put("instructor", columns.get(5).text());
     	//start and end dates - eventually will be replaced with actual calendar/date class
     	String placeholder = columns.get(6).text();
     	if(placeholder.contains("TBA"))
     	{
-    		input.description += "|Note: Dates for this class have not yet been decided";
+    		String curDes = input.courseInfo.get("description");
+    		String note = "Note: Dates for this class have not yet been decided";
+    		input.courseInfo.put("description", curDes == null ? note : curDes + " |" + note);
     		return;
     	}
-    	input.startdate = placeholder.substring(0, 5);
-    	input.enddate = placeholder.substring(6, 11);
+    	
+    	input.courseInfo.put("start_date", placeholder.substring(0, 5));
+    	input.courseInfo.put("end_date", placeholder.substring(6, 11));
     }
     
 
@@ -232,44 +228,50 @@ public class ParseClassfinderDoc{
     	String hold = columns.get(0).text();
     	
     	String hours = hold.replaceAll("[^\\d+]", "");
+
+    	String stTime = input.courseInfo.get("start_time");
+    	String enTime = input.courseInfo.get("end_time");
+    	
     	if(hold.contains("TBA"))
     	{
-    		input.description += "|Note: No class times at time of last update";
+    		input.courseInfo.put("description", input.courseInfo.get("description") + "|Note: No class/lab times at time of last update");
     	} else if (!hold.matches("[MTWRF]+(\\s)[0-9]+:.*")) {
-    		input.description += "|Note: Nonstandard class time: " + hold;
+    		input.courseInfo.put("description", input.courseInfo.get("description") + "|Nonstandard class time: " + hold);
     		//dealing with am/pm
     	} else if (hold.contains("am")) {
-    		input.starthrs.add(Integer.parseInt(hours.substring(0, 3)));
-        	input.endhrs.add(Integer.parseInt(hours.substring(4, 7)));
+    		input.courseInfo.put("start_time", stTime == null ? hours.substring(0, 4) : stTime + " " + hours.substring(0, 4));
+        	input.courseInfo.put("end_time", enTime == null ? hours.substring(4) : enTime + " " + hours.substring(4));
     	} else {
-    		//start time
-    		if(Integer.parseInt(hours.substring(0, 3)) > 900)
-    				input.starthrs.add(Integer.parseInt(hours.substring(0, 3)));
+    		//the extra if-else statements here are for times in the 12 pm block
+    		if(Integer.parseInt(hours.substring(0, 4)) >= 1200)
+    			input.courseInfo.put("start_time", stTime == null ? hours.substring(0, 4) : stTime + " " + hours.substring(0, 4));
     		else
-    			input.starthrs.add(1200 + Integer.parseInt(hours.substring(0, 3)));
-    		//end time
-    		if(Integer.parseInt(hours.substring(4, 7)) > 1100)
-    			input.endhrs.add(Integer.parseInt(hours.substring(4, 7)));
+    			input.courseInfo.put("start_time", stTime == null ? String.valueOf(1200 + Integer.parseInt(hours.substring(0, 4))) : stTime + " " + String.valueOf(1200 + Integer.parseInt(hours.substring(0, 4))));
+    		
+    		if(Integer.parseInt(hours.substring(4)) >= 1200)
+    			input.courseInfo.put("end_time", enTime == null ? hours.substring(4) : enTime + " " + hours.substring(4));
     		else
-    			input.endhrs.add(1200 + Integer.parseInt(hours.substring(4, 7)));
+    			input.courseInfo.put("end_time", stTime == null ? String.valueOf(1200 + Integer.parseInt(hours.substring(4))) : enTime + " " + String.valueOf(1200 + Integer.parseInt(hours.substring(4))));
     	}
     	
-    	input.meettimes.add(hold.replaceAll("[^(MTWRF)]+", ""));
+    	String meet = input.courseInfo.get("meet_times");
+    	input.courseInfo.put("meet_times", meet == null ? hold.replaceAll("[^(MTWRF)]+", "") : meet + " " + hold.replaceAll("[^(MTWRF)]+", ""));
     	
-    	input.building = columns.get(1).text();
+    	String curBuild = input.courseInfo.get("building");
+    	input.courseInfo.put("building", curBuild == null ? columns.get(1).text() : input.courseInfo.get("building") + "  " + columns.get(1).text());
+    	
     	//extra things that might not occur on all lines
     	// -credits will be in every course but will not appear on a line for extra meetings
     	// -extra charges may or may not be in a course
     	if(columns.size() >= 3) {
     		if(columns.get(2).text().contains("-"))
-    			input.description += "|Note: Credit value is variable, ranging from " + columns.get(2).text();
-    		else {
-    			input.credits = Integer.parseInt(columns.get(2).text().replaceAll("[^\\d+]", ""));
-    			}
+    			input.courseInfo.put("description", input.courseInfo.get("description") + " |Note: Credit value is variable, ranging from " + columns.get(2).text());
+    		else
+    			input.courseInfo.put("credits", columns.get(2).text().replaceAll("[^\\d+]", ""));
     	}
     	
     	if (columns.size() == 4)
-    		input.extrachgs = columns.get(3).text();	
+    		input.courseInfo.put("extra_charges", columns.get(3).text());	
     }
 
     
