@@ -10,7 +10,7 @@ import java.io.IOException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-public class CallUniServer {
+public class CallServer {
 	
     //Headers for the request to WWU servers
     private static final String HOST = "admin.wwu.edu";

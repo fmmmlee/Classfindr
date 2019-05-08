@@ -18,12 +18,12 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 import software.amazon.awssdk.utils.StringUtils;
 
 
-public class Course {
+public class Course{
 	
 	public final HashMap<String, String> courseInfo = new HashMap<String, String>();
 
 	//default constructor
-	public Course() {}
+	public Course(){}
 	
 	
 	/*
@@ -52,7 +52,14 @@ public class Course {
 		HashMap<String, AttributeValueUpdate> updates = new HashMap<String, AttributeValueUpdate>();
 		for(HashMap.Entry<String, String> entry : courseInfo.entrySet())
 		{
-			updates.put(entry.getKey(), new AttributeValueUpdate(new AttributeValue(entry.getValue()), AttributeAction.PUT));
+			AttributeValue value = new AttributeValue(entry.getValue());
+			if(StringUtils.isBlank(value.getS()))
+			{
+				System.out.println("BLANK ATTRIBUTE" + entry.getKey() + " and Value is " + entry.getValue());
+				System.out.println(courseInfo.get("crn"));
+			}
+			else
+				updates.put(entry.getKey(), new AttributeValueUpdate(new AttributeValue(entry.getValue()), AttributeAction.PUT));
 		}
 		//removing the CRN, which does not change
 		updates.remove("crn");
@@ -67,7 +74,13 @@ public class Course {
 	public HashMap<String, AttributeValue> itemKey()
 	{
 		HashMap<String, AttributeValue> key = new HashMap<String, AttributeValue>();
-		key.put("crn", new AttributeValue(courseInfo.get("crn")));
+		AttributeValue crn = new AttributeValue(courseInfo.get("crn"));
+		if(StringUtils.isBlank(crn.getS()))
+		{
+			System.out.println("BLANK CRN");
+			return null;
+		}
+		key.put("crn", crn);
 		return key;
 	}
 	
@@ -84,7 +97,8 @@ public class Course {
 			
 			System.out.print(curInfo.getKey() + ": " + curInfo.getValue());
 			if(curInfo.getValue() == "" || curInfo.getValue().matches("[\\s]*") || curInfo.getValue().length() < 1){
-				System.out.println("empty space at " + curInfo.getKey());
+				for(int i = 0; i < 1000; i++)
+					System.out.println("empty space at " + curInfo.getKey());
 				break;
 			}
 			

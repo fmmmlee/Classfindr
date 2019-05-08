@@ -10,16 +10,42 @@
 //TODO: Good error checking analysis throughout whole package
 
 
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+public class ParseDoc implements Runnable{
 
-public class ParseClassfinderDoc{
-
+	Document unsorted;
+	String term;
+	BlockingQueue<Course> toBeReturned;
+	AtomicInteger size;
+	CountDownLatch signal_conversion;
+	
+	/* note to self, I think the queue is passed by reference */
+	public ParseDoc(ThreadShare shared, Document doc_in)
+	{
+		unsorted = doc_in;
+		term = shared.term;
+		toBeReturned = shared.course_queue;
+		size = shared.size;
+		signal_conversion = shared.course_latch;
+	}
+	
+	public void run()
+	{
+		parseDocument(unsorted, term);
+	}
+	
+	
 	//TODO: swap these lists for a JSON or YAML which gets updated from the list which can be found by looking at the page source for https://admin.wwu.edu/pls/wwis/wwsktime.SelClass
 	private static List<String> subjects = Arrays.asList("A/HI", "ACCT", "AECI", "AHE", "AMST", "ANTH", "ARAB", "ART",
 			"ASTR", "AUAP", "BIOL", "BNS", "C/AM", "C2C", "CD", "CHEM", "CHIN", "CISS", "CLST", "COMM",
@@ -37,11 +63,12 @@ public class ParseClassfinderDoc{
 	
 	
 	//parsing the HTML from CallUniServer into Course objects
-    public static List<Course> parseDocument(Document unsorted, String currentTerm){
-    	List<Course> toBeReturned = new ArrayList<Course>();
+    public void parseDocument(Document unsorted, String currentTerm){
+    	
     	
     	
     	int numClasses = 0;
+    	int batchSize = 0;
         /*
          * 
          * TODO: Database Integration
@@ -171,11 +198,16 @@ public class ParseClassfinderDoc{
             	i++;
             }
             	
-        		toBeReturned.add(temp);
+        		try {
+					toBeReturned.put(temp);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             	numClasses++;
         }
-        System.out.println(numClasses);	     	
-        return toBeReturned;
+        System.out.println(numClasses);
+        size.set(numClasses);
     }
 
     
@@ -228,7 +260,7 @@ public class ParseClassfinderDoc{
     	String hold = columns.get(0).text();
     	
     	String hours = hold.replaceAll("[^\\d+]", "");
-
+    	String meetTime = hold.replaceAll("[^(MTWRF)]+", "");
     	String stTime = input.courseInfo.get("start_time");
     	String enTime = input.courseInfo.get("end_time");
     	
@@ -255,7 +287,8 @@ public class ParseClassfinderDoc{
     	}
     	
     	String meet = input.courseInfo.get("meet_times");
-    	input.courseInfo.put("meet_times", meet == null ? hold.replaceAll("[^(MTWRF)]+", "") : meet + " " + hold.replaceAll("[^(MTWRF)]+", ""));
+    	if(meetTime != null && meetTime != "");
+    		input.courseInfo.put("meet_times", meet == null ? hold.replaceAll("[^(MTWRFS)]+", "") : meet + " " + hold.replaceAll("[^(MTWRFS)]+", ""));
     	
     	String curBuild = input.courseInfo.get("building");
     	input.courseInfo.put("building", curBuild == null ? columns.get(1).text() : input.courseInfo.get("building") + "  " + columns.get(1).text());
