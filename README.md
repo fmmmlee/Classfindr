@@ -2,7 +2,7 @@
 
 Eventually, a service that scrapes WWU's classfinder and offers a mirror database with more diverse and accessible tools.
 
-Current status: Just implemented multithreading for the three classes which do most of the work.
+Current status: Just implemented multithreading for the three classes which do most of the work in the scraper/parser.
 
 ## Current ToDo
 - Write functions to read from the database; I know some uploads aren't getting placed in the database but I'm not sure why (duplicate CRNs? must check these, and if so alter the primary key on the AWS console)
