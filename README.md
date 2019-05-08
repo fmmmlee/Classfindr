@@ -6,6 +6,7 @@ Current status: Just implemented multithreading for the three classes which do m
 
 ## Current ToDo
 - Write functions to read from the database; I know some uploads aren't getting placed in the database but I'm not sure why (duplicate CRNs? must check these, and if so alter the primary key on the AWS console)
+- Go through code and clarify comments, add documentation tags
 - Implement a metrics function with timers to analyze speed of different implementations
 - Implement BatchWriteItem
 - Possibly spin more threads off of update_thread to more quickly upload the data 
