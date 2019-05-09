@@ -23,4 +23,6 @@ Eventually, a service that scrapes WWU's classfinder and offers a mirror databas
 - check AWS traffic tier limitations and check if requests need to be metered
 - Implement duplicate CRN checker
 
-https://user-images.githubusercontent.com/30479162/57427361-69001b00-71d8-11e9-9c58-805538e9e126.JPG
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/30479162/57427361-69001b00-71d8-11e9-9c58-805538e9e126.JPG" width="350" title="a sample run of the scraper and uploader">
+</p>
