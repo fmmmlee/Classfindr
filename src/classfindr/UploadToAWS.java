@@ -127,7 +127,7 @@ public class UploadToAWS implements Runnable{
 				per_second = per_second/second_list.size();
 				thisMetric.set_upload_rate(per_second);
 				System.out.println();
-				System.out.println("               -~-~-~ Upload Complete ~-~-~-");
+				System.out.println("                  -~-~-~ Upload Complete ~-~-~-");
 				return;
 			}
 
