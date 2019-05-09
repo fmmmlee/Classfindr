@@ -22,3 +22,6 @@ Eventually, a service that scrapes WWU's classfinder and offers a mirror databas
 - Implement a metrics function with timers to analyze speed of different implementations
 - check AWS traffic tier limitations and check if requests need to be metered
 - Implement duplicate CRN checker
+
+Here's a shot of what the UI looks like at this stage (or something close to it)
+![console run](exampleclassfinderrun.jpg)
