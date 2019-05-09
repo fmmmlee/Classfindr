@@ -2,12 +2,14 @@
 bin/**
 libs/**
 target/**
-src/bin**
+src/**
 .classpath
 .project
 *.mwb
 *.bak
 *.sql
 *.txt
+*.log
 *.html
+*.json
 /target/
