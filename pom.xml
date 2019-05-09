@@ -46,6 +46,26 @@
 					<executable>C:\Program Files\Java\jdk1.8.0_181\bin\javac.exe</executable>
 				</configuration>
 			</plugin>
+			<!-- Moving to parent outside of target directory -->
+			<!-- from https://stackoverflow.com/questions/53189062/move-jarfiles-from-maven-target-to-other-directory-automatically -->
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-antrun-plugin</artifactId>
+			  <version>1.8</version>
+			  <executions>
+			    <execution>
+			      <phase>install</phase>
+			      <configuration>
+			        <target>
+			          <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar" todir="${project.basedir}" />
+			        </target>
+			      </configuration>
+			      <goals>
+			        <goal>run</goal>
+			      </goals>
+			    </execution>
+			  </executions>
+			</plugin>
 		</plugins>
 	</build>
 	<!---->

@@ -14,30 +14,34 @@ package classfindr;
 
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jsoup.nodes.Document;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
 
 public class ThreadShare {
-
-	volatile BlockingQueue<Course> course_queue = new LinkedBlockingQueue<Course>();
-	volatile BlockingQueue<HashMap<String, AttributeValue>> put_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
-	volatile BlockingQueue<HashMap<String, AttributeValue>> key_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
-	volatile BlockingQueue<HashMap<String, AttributeValueUpdate>> update_queue = new LinkedBlockingQueue<HashMap<String, AttributeValueUpdate>>();
-	volatile int mode;
+	
+	BlockingQueue<Course> course_queue = new LinkedBlockingQueue<Course>();
+	BlockingQueue<HashMap<String, AttributeValue>> put_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
+	BlockingQueue<HashMap<String, AttributeValue>> key_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
+	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_queue = new LinkedBlockingQueue<HashMap<String, AttributeValueUpdate>>();
+	int mode;
+	Document unparsed;
 	AtomicInteger size = new AtomicInteger(0);
 	AtomicInteger converting = new AtomicInteger(1);
 	volatile boolean batch_mode = false;
 	volatile String term;
 	volatile String table;
-	
-	volatile Metric metric;
-	CountDownLatch course_latch = new CountDownLatch(1);
-	CountDownLatch upload_latch = new CountDownLatch(1);
+	Metric metric;
+
+	public synchronized void set_document(Document input)
+	{
+		unparsed = input;
+	}
 	
 	ThreadShare(int mode_in, String term_in, String table_in, Metric metric_in)
 	{

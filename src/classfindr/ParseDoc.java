@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jsoup.nodes.Document;
@@ -40,17 +39,15 @@ public class ParseDoc implements Runnable{
 	String term;
 	BlockingQueue<Course> toBeReturned;
 	AtomicInteger size;
-	CountDownLatch signal_conversion;
 	Metric thisMetric;
 	
 	/* note to self, I think the queue is passed by reference */
-	public ParseDoc(ThreadShare shared, Document doc_in)
+	public ParseDoc(ThreadShare shared)
 	{
-		unsorted = doc_in;
+		unsorted = shared.unparsed;
 		term = shared.term;
 		toBeReturned = shared.course_queue;
 		size = shared.size;
-		signal_conversion = shared.course_latch;
 		thisMetric = shared.metric;
 		
 	}
@@ -81,7 +78,7 @@ public class ParseDoc implements Runnable{
 	//parsing the HTML from CallUniServer into Course objects
 	//TODO: This parse is pretty inefficient; it doesn't really matter since I've multithreaded everything and AWS throttling is the rate-limiting step but try to increase 
 	//efficiency at some point
-    public void parseDocument(Document unsorted, String currentTerm){
+    public void parseDocument(Document unsorted, String year_term){
     	
     	/*************CRN DUPLICATE CHECKING*****************/
     	
@@ -119,9 +116,9 @@ public class ParseDoc implements Runnable{
          *
          */
         // year/term setup
-        String year = currentTerm.substring(0, 4);
+        String year = year_term.substring(0, 4);
         String term = "";
-    	switch (currentTerm.substring(4,6))
+    	switch (year_term.substring(4,6))
     	{
     	case "40":
     		term = "fall";
@@ -151,7 +148,7 @@ public class ParseDoc implements Runnable{
         	
         	
         	//CRN
-        	temp.courseInfo.put("crn", columns.select("input").attr("value"));
+        	temp.courseInfo.put("crn", columns.select("input").attr("value") + " " + year_term);
         	temp.courseInfo.put("year", year);
     		temp.courseInfo.put("term", term);
         	//clean up empty columns and skip row if empty

@@ -10,45 +10,55 @@ package classfindr;
  * 
  */
 
-
-import java.io.PrintWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org.jsoup.nodes.Document;
-
 public class Initializer {
 	
+	/* modes for uploading */
 	static final int PUT = 1;
 	static final int UPDATE = 2;
 	
+	/* padding */
+	static final String SPACING = "[     ] ";
+	static final String ERR = "[ERROR] ";
+	static final String SYSMSG = "[INFO-] ";
+	
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException
 	{
-		System.out.println("\n\n");
+		
 		//accept console input for multiple vs 1 year and multiple vs 1 term(s)
 		
 		String term = "";
 		/* iterate over years */
-		for(int i = 2014; i < 2015; i++)
+		for(int i = 2004; i < 2010; i++)
 		{
 			/* iterate over trimesters */
-			for(int j = 10; j < 20; j+=10)
+			for(int j = 10; j < 50; j+=10)
 			{
-				FileWriter append = new FileWriter("metrics.log", true);
-				PrintWriter logs = new PrintWriter(append);
-				Metric term_stats = new Metric();
 				term = String.valueOf(i) + String.valueOf(j);
-				/* calling WWU servers */
-				//try to thread this so you can have a ....... (incrementing dots) thing while waiting
-				Document unparsed_doc = CallServer.fullTermQuery(term, term_stats);
 				
-				/* initializing shared thread object */
+				System.out.println("\n\n" + SPACING); //spacing
+				
+				/* initializing shared metric object */
+				Metric term_stats = new Metric(term);
+				
+				/* initializing shared data object */
 				final ThreadShare share = new ThreadShare(UPDATE, term, "course", term_stats);
 				
+				/* calling WWU servers */
+				CallServer call = new CallServer(share);
+				Thread call_thread = new Thread(call);
+				call_thread.start();
+				
+				/* waiting for call thread to exit */
+				Waiting_Indicators.dots(call_thread, 4);
+				System.out.println(SPACING + "              ");
+				System.out.println(SPACING + "--- server call complete ---\n");
+				
 				/* initializing class instances */
-				ParseDoc parse = new ParseDoc(share, unparsed_doc);
+				ParseDoc parse = new ParseDoc(share);
 				UploadToAWS upload = new UploadToAWS(share);
 				CourseConvert converter = new CourseConvert(share);
 				
@@ -63,22 +73,12 @@ public class Initializer {
 				upload_thread.get();
 				
 				/* printing metrics to log */
-				logs.println("----------------------------------------------");
-				logs.println("Term: " + term);
-				logs.println("Server Call time: " + term_stats.call_time + " nsec");
-				logs.println("Parse Time: " + term_stats.parse_time + " nsec");
-				logs.println("Conversion Time: " + term_stats.conversion_time + " nsec");
-				logs.println("Total Uploads: " + share.size);
-				logs.println("Uploads Per Second: " + term_stats.uploads_per_second);
-				logs.println("Upload Time: " + term_stats.upload_time + " nsec");
-				logs.println("----------------------------------------------");
-				logs.flush();
-				logs.close();
+				term_stats.log_to_file("metrics.log");
 
 			}
 		}
 		
-		System.out.println("\n\n\n------- see metrics.log for program execution stats, exiting now -------");
+		System.out.println(SPACING + "\n" + SPACING + "\n" + SPACING + "\n" + SYSMSG +  "------- see metrics.log for program execution stats, exiting now -------");
 		System.out.println("\n\n");
 		System.out.println("(c) Matthew Lee, 2019");
 		System.out.println("MIT license");

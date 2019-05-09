@@ -68,7 +68,7 @@ public class UploadToAWS implements Runnable{
 	
 	String term;
 	String table;
-	static boolean begun_bar = false;
+	static boolean begun_bar;
 	Metric thisMetric;
 	
 	//NO BATCH SUPPORT IN THIS VERSION 
@@ -98,7 +98,7 @@ public class UploadToAWS implements Runnable{
 	/**upload incoming objects from queue**/
 	private void handle_queue()
 	{
-		
+		begun_bar = false;
 		start_second = 0;
 		this_second = 0.0;
 		per_second = 0.0;
@@ -126,6 +126,7 @@ public class UploadToAWS implements Runnable{
 				}
 				per_second = per_second/second_list.size();
 				thisMetric.set_upload_rate(per_second);
+				thisMetric.set_total_uploads(job_progress);
 				System.out.println();
 				System.out.println("                  -~-~-~ Upload Complete ~-~-~-");
 				return;
