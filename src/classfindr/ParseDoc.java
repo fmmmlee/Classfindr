@@ -284,7 +284,7 @@ public class ParseDoc implements Runnable{
         
         /***time elapsed***/
         thisMetric.set_parse_time(System.nanoTime()-start_time);
-        System.out.println("--- parse finished ---");
+        System.out.println("\n--- parse finished ---");
     }
 
     

@@ -44,7 +44,7 @@ public class CallServer {
     
     static Document fullTermQuery(String term, Metric info) throws IOException
     {
-    	System.out.println("### calling WWU servers ###");
+    	System.out.println("### calling WWU servers ###\n\n");
     	long start = System.nanoTime();
         String queryString = "sel_subj=dummy&sel_subj=dummy&sel_gur=dummy&sel_gur=dummy&sel_attr=dummy&sel_site=dummy&sel_day=dummy&sel_open=dummy&sel_crn=&term="
         + term + "&sel_gur=All&sel_attr=All&sel_site=All&sel_subj=All&sel_inst=ANY&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
@@ -71,7 +71,7 @@ public class CallServer {
         	FileUtils.writeStringToFile(f, response.outerHtml(), "UTF-8");
         	
         }
-        System.out.println("--- response accepted ---");
+        System.out.println("--- response accepted ---\n");
         return response;
     }
 	

@@ -26,6 +26,7 @@ public class Initializer {
 	
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException
 	{
+		System.out.println("\n\n");
 		//accept console input for multiple vs 1 year and multiple vs 1 term(s)
 		
 		String term = "";
@@ -40,6 +41,7 @@ public class Initializer {
 				Metric term_stats = new Metric();
 				term = String.valueOf(i) + String.valueOf(j);
 				/* calling WWU servers */
+				//try to thread this so you can have a ....... (incrementing dots) thing while waiting
 				Document unparsed_doc = CallServer.fullTermQuery(term, term_stats);
 				
 				/* initializing shared thread object */

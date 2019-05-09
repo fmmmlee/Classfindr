@@ -5,6 +5,7 @@ target/**
 src/**
 .classpath
 .project
+*.jar
 *.mwb
 *.bak
 *.sql
