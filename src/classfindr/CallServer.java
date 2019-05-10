@@ -21,11 +21,6 @@ import org.jsoup.nodes.Document;
 
 public class CallServer implements Runnable{
 	
-	//
-	static final String SPACING = "[     ] ";
-	static final String ERR = "[ERROR] ";
-	static final String SYSMSG = "[INFO-] ";
-	
     //Headers for the request to WWU servers
     private static final String HOST = "admin.wwu.edu";
     private static final String USER_AGENT = "Mozilla/5.0";
@@ -71,7 +66,7 @@ public class CallServer implements Runnable{
     
     static Document fullTermQuery() throws IOException
     {
-    	System.out.println(SYSMSG + "### calling WWU servers ###\n\n");
+    	Notifications.call_initiated();
     	long start = System.nanoTime();
         String queryString = "sel_subj=dummy&sel_subj=dummy&sel_gur=dummy&sel_gur=dummy&sel_attr=dummy&sel_site=dummy&sel_day=dummy&sel_open=dummy&sel_crn=&term="
         + term + "&sel_gur=All&sel_attr=All&sel_site=All&sel_subj=All&sel_inst=ANY&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
@@ -95,8 +90,7 @@ public class CallServer implements Runnable{
         if(response.select("table").size() < 2)
         {
         	
-        	System.out.println(ERR + "bad response. requested term was: " + term);
-        	System.out.println(ERR + "see response_log.html for full http of response");
+        	Notifications.bad_response(term);
         	File f = new File("response_log.html");
         	FileUtils.writeStringToFile(f, response.outerHtml(), "UTF-8");
         	throw new IOException();

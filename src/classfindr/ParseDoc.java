@@ -54,7 +54,7 @@ public class ParseDoc implements Runnable{
 	
 	public void run()
 	{
-		System.out.println("### parse thread spun ###");
+		Notifications.thread_spun("parse");
 		parseDocument(unsorted, term);
 	}
 	
@@ -277,11 +277,13 @@ public class ParseDoc implements Runnable{
 		}
         /********End Duplicate Checking*********/
         
-        size.set(numClasses);
         
         /***time elapsed***/
         thisMetric.set_parse_time(System.nanoTime()-start_time);
-        System.out.println("\n--- parse finished ---");
+        
+        
+        Notifications.task_finished("parse");
+        size.set(numClasses);
     }
 
     

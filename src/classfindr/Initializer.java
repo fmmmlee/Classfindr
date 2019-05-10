@@ -31,8 +31,9 @@ public class Initializer {
 		//accept console input for multiple vs 1 year and multiple vs 1 term(s)
 		
 		String term = "";
+		String table = "courses";
 		/* iterate over years */
-		for(int i = 2004; i < 2010; i++)
+		for(int i = 2006; i < 2010; i++) //should be missing 2005 summer/fall and 2006 spring-fall
 		{
 			/* iterate over trimesters */
 			for(int j = 10; j < 50; j+=10)
@@ -42,10 +43,10 @@ public class Initializer {
 				System.out.println("\n\n" + SPACING); //spacing
 				
 				/* initializing shared metric object */
-				Metric term_stats = new Metric(term);
+				Metric term_stats = new Metric(term, table);
 				
 				/* initializing shared data object */
-				final ThreadShare share = new ThreadShare(UPDATE, term, "course", term_stats);
+				final ThreadShare share = new ThreadShare(UPDATE, term, table, term_stats);
 				
 				/* calling WWU servers */
 				CallServer call = new CallServer(share);
@@ -54,8 +55,7 @@ public class Initializer {
 				
 				/* waiting for call thread to exit */
 				Waiting_Indicators.dots(call_thread, 4);
-				System.out.println(SPACING + "              ");
-				System.out.println(SPACING + "--- server call complete ---\n");
+				Notifications.call_success();
 				
 				/* initializing class instances */
 				ParseDoc parse = new ParseDoc(share);
@@ -77,11 +77,6 @@ public class Initializer {
 
 			}
 		}
-		
-		System.out.println(SPACING + "\n" + SPACING + "\n" + SPACING + "\n" + SYSMSG +  "------- see metrics.log for program execution stats, exiting now -------");
-		System.out.println("\n\n");
-		System.out.println("(c) Matthew Lee, 2019");
-		System.out.println("MIT license");
-		System.out.println("\n");
+		Notifications.exit_msg();
 	}	
 }

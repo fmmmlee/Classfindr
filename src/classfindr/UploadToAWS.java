@@ -49,7 +49,7 @@ import org.jsoup.nodes.Document;
 @SuppressWarnings("unused")
 public class UploadToAWS implements Runnable{
 
-	static final double SIZE = 60.0;
+	static final int SIZE = 60;
 	
 	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_input;
 	BlockingQueue<HashMap<String, AttributeValue>> key_input;
@@ -71,6 +71,11 @@ public class UploadToAWS implements Runnable{
 	static boolean begun_bar;
 	Metric thisMetric;
 	
+	//progress bar currently takes in a boolean to decide whether to print a message or not
+	//it's hacky, unnecessary and I need to change it at some point
+	
+	//TODO all the messages from Amazon's DB examples need to be changed
+	
 	//NO BATCH SUPPORT IN THIS VERSION 
 	public UploadToAWS(ThreadShare shared)
 	{
@@ -89,16 +94,14 @@ public class UploadToAWS implements Runnable{
 	//note that the upload progress bar may appear already partly filled because the thread has been uploading before the parse and conversion jobs were complete
 	public void run()
 	{
-		
-		System.out.println("### upload thread spun ###");
+		Notifications.thread_spun("upload");
 		handle_queue();
-		return;
 	}
 	
 	/**upload incoming objects from queue**/
 	private void handle_queue()
 	{
-		begun_bar = false;
+		begun_bar = true;
 		start_second = 0;
 		this_second = 0.0;
 		per_second = 0.0;
@@ -127,8 +130,6 @@ public class UploadToAWS implements Runnable{
 				per_second = per_second/second_list.size();
 				thisMetric.set_upload_rate(per_second);
 				thisMetric.set_total_uploads(job_progress);
-				System.out.println();
-				System.out.println("                  -~-~-~ Upload Complete ~-~-~-");
 				return;
 			}
 
@@ -172,26 +173,7 @@ public class UploadToAWS implements Runnable{
 		}
 	}
 	
-	/* simple console progress bar */
-	//TODO: in the mid-600s / 2576 there was a hop at the end of the line; I assume it's an idiosyncrasy of the casts between double and int here
-	//TODO: Change the upload progress bar to be a parameter passed in called message, for increased portability and usefulness - probably the boolean, too
-	private static void progress_bar(int progress, int goal)
-	{
-		if(!begun_bar) {
-			System.out.println("       -~-~-~-~-~ Amazon DynamoDB Upload Progress ~-~-~-~-~-       ");
-			System.out.println();
-    	}
-		
-		if(progress<goal)
-			System.out.print("   ["
-					+ StringUtils.repeat('|',(int) (SIZE*((double) job_progress/((double) job_size.get()))))
-					+ StringUtils.repeat(' ', (int) (SIZE*(1.0-((double) job_progress/((double) job_size.get()))))) + "]" + StringUtils.repeat(" ", 6 - (int) Math.log10((double) job_progress)) + job_progress + "/" + job_size + "   \r");
-		else
-			System.out.println("   ["
-					+ StringUtils.repeat('|',(int) (SIZE*((double) job_progress/((double) job_size.get()))))
-					+ StringUtils.repeat(' ', (int) (SIZE*(1.0-((double) job_progress/((double) job_size.get()))))) + "]" + StringUtils.repeat(" ", 6 - (int) Math.log10((double) job_progress)) + job_progress + "/" + job_size);
-		begun_bar = true;
-	}
+
 	
 	/* placing a single item into the database */
     private static void item_put(String tableName, HashMap<String, AttributeValue> toPush)
@@ -204,7 +186,8 @@ public class UploadToAWS implements Runnable{
                 job_progress++;
                 this_second++;
                 if(job_size.get() != 0){
-                	progress_bar(job_progress, job_size.get());
+                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.get(), begun_bar);
+                	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {
                 System.err.format("Error: The table \"%s\" can't be found.\n", tableName);
@@ -227,7 +210,8 @@ public class UploadToAWS implements Runnable{
                 job_progress++;
                 this_second++;
                 if(job_size.get() != 0){
-                	progress_bar(job_progress, job_size.get());
+                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.get(), begun_bar);
+                	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {
                 System.err.format("Error: The table \"%s\" can't be found.\n", tableName);

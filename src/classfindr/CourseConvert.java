@@ -50,11 +50,11 @@ public class CourseConvert implements Runnable {
 	{
 		long start_time = System.nanoTime();
 		int k = 0;
-		System.out.println("### converter thread spun ###");
+		Notifications.thread_spun("converter");
 		while(true) {
 			if(k == still_parsing.get() && k != 0) {
 				thisMetric.set_conversion_time(System.nanoTime()-start_time);
-				System.out.println("--- conversion finished ---\n\n\n");
+				Notifications.task_finished("conversion");
 				still_converting.set(0);
 				return;
 			}

@@ -2,9 +2,9 @@
 bin/**
 libs/**
 target/**
-src/**
 .classpath
 .project
+/src/bin**
 *.jar
 *.mwb
 *.bak
@@ -13,4 +13,4 @@ src/**
 *.log
 *.html
 *.json
-/target/
+/target**
