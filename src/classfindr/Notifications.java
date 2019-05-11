@@ -1,5 +1,7 @@
 package classfindr;
 
+import java.util.Scanner;
+
 /*
  * 
  * Matthew Lee
@@ -12,9 +14,78 @@ package classfindr;
 public class Notifications {
 	
 	static final String SPACING = "[     ] ";
-	static final String ERR = "[ERROR] ";
-	static final String SYSMSG = "[INFO] ";
-	static final String SUCCESS = "[SUCCESS] ";
+	static final String ERR = "[" + (char)27 + "[31mERROR" + (char)27 + "[39m] ";
+	static final String SYSMSG = "[" + (char)27 + "[34mINFO" + (char)27 + "[39m] ";
+	static final String SUCCESS = "[" + (char)27 + "[32mSUCCESS" + (char)27 + "[39m] ";
+	
+	
+	/* initial user input */
+	static void setprefs(Prefs empty)
+	{
+		Scanner input = new Scanner(System.in);
+		System.out.println(SYSMSG + "Data is available from Fall 2003 to mid-2020.");
+		System.out.println(SYSMSG + "Input format: [year term] to [year term] [MODE] [table name]");
+		String[] prefs = input.nextLine().split(" ");
+		empty.year_start = 100*(Integer.parseInt(prefs[0]));
+		empty.year_end = 100*(Integer.parseInt(prefs[3]));
+		
+		switch(prefs[1].toLowerCase())
+		{
+		case "winter" :
+			empty.year_start += 10;
+			break;
+		case "spring" :
+			empty.year_start += 20;
+			break;
+		case "summer" :
+			empty.year_start += 30;
+			break;
+		case "fall" :
+			empty.year_start += 40;
+			break;
+		}
+		
+		switch(prefs[4].toLowerCase())
+		{
+		case "winter" :
+			empty.year_end += 10;
+			break;
+		case "spring" :
+			empty.year_end += 20;
+			break;
+		case "summer" :
+			empty.year_end += 30;
+			break;
+		case "fall" :
+			empty.year_end += 40;
+			break;
+		}
+		
+		switch(prefs[5])
+		{
+		case "UPDATE" :
+			empty.mode = 2;
+			break;
+		case "PUT" :
+			empty.mode = 1;
+			break;
+		case "summer" :
+			empty.mode = 3;
+			break;
+		case "fall" :
+			empty.mode = 4;
+			break;
+		}
+
+		empty.table = prefs[6];
+		
+		input.close();
+	}
+	
+	
+	
+	
+	
 	
 	/* status Updates */
 	static void thread_spun(String name)

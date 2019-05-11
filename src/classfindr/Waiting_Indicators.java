@@ -12,6 +12,7 @@ package classfindr;
 
 import org.apache.commons.lang3.StringUtils;
 
+
 //TODO: make the progress bar portable and put it in this class
 public class Waiting_Indicators {
 
@@ -52,7 +53,8 @@ public class Waiting_Indicators {
 			System.out.println("   ["
 					+ StringUtils.repeat('|',(int) (length*((double) progress/((double) goal))))
 					+ StringUtils.repeat(' ', (int) (length*(1.0-((double) progress/((double) goal))))) + "]"
-					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal + "\n\n\n" + "                  -~-~-~ Upload Complete ~-~-~-\n");
+					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal + "\n\n\n"
+					+ (char)27 + "[32m                  -~-~-~ Upload Complete ~-~-~-\n" + (char)27 + "[39m");
 		}
 	}
 	
