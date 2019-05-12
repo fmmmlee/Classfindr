@@ -15,6 +15,7 @@ package classfindr;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jsoup.nodes.Document;
@@ -26,29 +27,29 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 public class ThreadShare {
 	
 	BlockingQueue<Course> course_queue = new LinkedBlockingQueue<Course>();
+	BlockingQueue<Document> unparsed = new LinkedBlockingQueue<Document>();
+	BlockingQueue<Integer> size = new LinkedBlockingQueue<Integer>();
 	BlockingQueue<HashMap<String, AttributeValue>> put_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
 	BlockingQueue<HashMap<String, AttributeValue>> key_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
 	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_queue = new LinkedBlockingQueue<HashMap<String, AttributeValueUpdate>>();
+	
 	int mode;
-	Document unparsed;
-	AtomicInteger size = new AtomicInteger(0);
+	
+	//alternative to finished booleans - check if thread is alive
+	AtomicBoolean calls_finished = new AtomicBoolean(false);
+	AtomicBoolean parse_finished = new AtomicBoolean(false);
 	AtomicInteger converting = new AtomicInteger(1);
 	volatile boolean batch_mode = false;
-	volatile String term;
+	String[] terms;
 	volatile String table;
 	Metric metric;
 
-	public synchronized void set_document(Document input)
-	{
-		unparsed = input;
-	}
-	
-	ThreadShare(int mode_in, String term_in, String table_in, Metric metric_in)
+	ThreadShare(int mode_in, String[] terms_in, String table_in)
 	{
 		mode = mode_in;
-		term = term_in;
+		terms = terms_in;
 		table = table_in;
-		metric = metric_in;
+		metric = new Metric(terms_in, table_in);
 	}
 	
 }

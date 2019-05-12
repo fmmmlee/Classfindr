@@ -1,5 +1,7 @@
 package classfindr;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /*
@@ -20,65 +22,79 @@ public class Notifications {
 	
 	
 	/* initial user input */
-	static void setprefs(Prefs empty)
+	static void setprefs(Prefs to_be_set)
 	{
 		Scanner input = new Scanner(System.in);
 		System.out.println(SYSMSG + "Data is available from Fall 2003 to mid-2020.");
 		System.out.println(SYSMSG + "Input format: [year term] to [year term] [MODE] [table name]");
 		String[] prefs = input.nextLine().split(" ");
-		empty.year_start = 100*(Integer.parseInt(prefs[0]));
-		empty.year_end = 100*(Integer.parseInt(prefs[3]));
+		List<String> temp_terms = new ArrayList<String>();
+		int current_year = 100*(Integer.parseInt(prefs[0]));
+		int year_end = 100*(Integer.parseInt(prefs[3]));
 		
 		switch(prefs[1].toLowerCase())
 		{
 		case "winter" :
-			empty.year_start += 10;
+			current_year += 10;
 			break;
 		case "spring" :
-			empty.year_start += 20;
+			current_year += 20;
 			break;
 		case "summer" :
-			empty.year_start += 30;
+			current_year += 30;
 			break;
 		case "fall" :
-			empty.year_start += 40;
+			current_year += 40;
 			break;
 		}
 		
 		switch(prefs[4].toLowerCase())
 		{
 		case "winter" :
-			empty.year_end += 10;
+			year_end += 10;
 			break;
 		case "spring" :
-			empty.year_end += 20;
+			year_end += 20;
 			break;
 		case "summer" :
-			empty.year_end += 30;
+			year_end += 30;
 			break;
 		case "fall" :
-			empty.year_end += 40;
+			year_end += 40;
 			break;
 		}
 		
 		switch(prefs[5])
 		{
 		case "UPDATE" :
-			empty.mode = 2;
+			to_be_set.mode = 2;
 			break;
 		case "PUT" :
-			empty.mode = 1;
+			to_be_set.mode = 1;
 			break;
 		case "summer" :
-			empty.mode = 3;
+			to_be_set.mode = 3;
 			break;
 		case "fall" :
-			empty.mode = 4;
+			to_be_set.mode = 4;
 			break;
 		}
 
-		empty.table = prefs[6];
 		
+		to_be_set.table = prefs[6];
+		
+		while(current_year != year_end)
+		{
+			temp_terms.add(String.valueOf(current_year));
+			current_year += 10;
+			if(current_year % 100 > 40)
+			{
+				current_year += 100;
+				current_year -= 40;
+			}
+		}
+		
+		to_be_set.terms = temp_terms.toArray(new String[temp_terms.size()]);
 		input.close();
 	}
 	
@@ -95,12 +111,12 @@ public class Notifications {
 	
 	static void call_initiated()
 	{
-		System.out.println(SYSMSG + "### calling WWU servers ###" + "\n" + SPACING + "\n" + SPACING);
+		System.out.println(SYSMSG + "### calling WWU servers ###");
 	}
 	
 	static void task_finished(String name)
 	{
-        System.out.println(SPACING + "\n" + SUCCESS + "--- " + name + " finished ---");
+        System.out.println(SUCCESS + "--- " + name + " finished ---                                                              ");
 	}
 	
 	
@@ -131,9 +147,10 @@ public class Notifications {
 	}
 	
 	/* errors */
-	static void bad_response(String term)
+	static void bad_response(String term, int responsecode)
 	{
-		System.out.println(ERR + "bad response. requested term was: " + term);
+		System.out.println(ERR + "bad response. HTTP response code = " + responsecode);
+		System.out.println(ERR + "requested term was: " + term);
     	System.out.println(ERR + "see response_log.html for full http of response");
 	}
 	

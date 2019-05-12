@@ -9,9 +9,10 @@ package classfindr;
  */
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.client.HttpResponseException;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,27 +33,33 @@ public class CallServer implements Runnable{
     private static final String CONNECTION = "keep-alive";
     private static final String COOKIE = "TESTID=SET";
     private static final String INSECURE_REQS = "1";
-    static String term;
+    static String[] terms;
     static Metric info;
-    Document parsed;
+    BlockingQueue<Document> parsed_docs;
     ThreadShare for_document;
+    AtomicBoolean finished;
     
     CallServer(ThreadShare shared)
     {
-    	for_document = shared;
-    	term = shared.term;
+    	finished = shared.calls_finished;
+    	terms = shared.terms;
     	info = shared.metric;
-    	parsed = shared.unparsed;
+    	parsed_docs = shared.unparsed;
     }
    
     public void run()
-    {
-    	try {
-			for_document.set_document(fullTermQuery());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    {	//should add documents to the queue as they are received from the server
+    	Notifications.call_initiated();
+    	for(int i = 0; i < terms.length; i++) {
+	    	try {
+	    		parsed_docs.put(fullTermQuery(terms[i]));
+			} catch (IOException | InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	finished.set(true);
+    	Notifications.call_success();
     }
     
     //TODO: Make this coherent and function
@@ -64,14 +71,15 @@ public class CallServer implements Runnable{
                 instructor + "&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
     }
     
-    static Document fullTermQuery() throws IOException
+    static Document fullTermQuery(String term) throws IOException
     {
-    	Notifications.call_initiated();
+    	//TODO: Notification for call for specific term
     	long start = System.nanoTime();
         String queryString = "sel_subj=dummy&sel_subj=dummy&sel_gur=dummy&sel_gur=dummy&sel_attr=dummy&sel_site=dummy&sel_day=dummy&sel_open=dummy&sel_crn=&term="
         + term + "&sel_gur=All&sel_attr=All&sel_site=All&sel_subj=All&sel_inst=ANY&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
         String theUrl = ("https://admin.wwu.edu/pls/wwis/wwsktime.ListClass");
         Connection serverCall = Jsoup.connect(theUrl);
+        
         serverCall.header("Host", HOST);
         serverCall.header("User-Agent", USER_AGENT);
         serverCall.header("Accept", ACCEPT);
@@ -86,11 +94,16 @@ public class CallServer implements Runnable{
         serverCall.requestBody(queryString);
         serverCall.maxBodySize(0);
         Document response = serverCall.post();
-        info.set_call_time(System.nanoTime() - start);
+        //adding a new call time to the metric object
+        info.add_call_time(System.nanoTime() - start);
+        
+        if(serverCall.response().statusCode() != 200)
+        {
+        	//call fulltermquery() again after jitter + backoff
+        }
         if(response.select("table").size() < 2)
         {
-        	
-        	Notifications.bad_response(term);
+        	Notifications.bad_response(term, serverCall.response().statusCode());
         	File f = new File("response_log.html");
         	FileUtils.writeStringToFile(f, response.outerHtml(), "UTF-8");
         	throw new IOException();

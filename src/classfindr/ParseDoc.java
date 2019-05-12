@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jsoup.nodes.Document;
@@ -35,27 +36,40 @@ import com.google.gson.JsonPrimitive;
 
 public class ParseDoc implements Runnable{
 
-	Document unsorted;
-	String term;
+	BlockingQueue<Document> unparsed;
 	BlockingQueue<Course> toBeReturned;
-	AtomicInteger size;
+	String[] terms;
+	BlockingQueue<Integer> sizes;
+	AtomicBoolean calls_finished;
+	AtomicBoolean finished_parsing;
 	Metric thisMetric;
 	
-	/* note to self, I think the queue is passed by reference */
+
 	public ParseDoc(ThreadShare shared)
 	{
-		unsorted = shared.unparsed;
-		term = shared.term;
+		unparsed = shared.unparsed;
+		calls_finished = shared.calls_finished;
+		terms = shared.terms;
 		toBeReturned = shared.course_queue;
-		size = shared.size;
+		sizes = shared.size;
+		finished_parsing = shared.parse_finished;
 		thisMetric = shared.metric;
-		
 	}
 	
 	public void run()
 	{
 		Notifications.thread_spun("parse");
-		parseDocument(unsorted, term);
+		//should just keep doing this for each term
+		int i = 0;
+		while(unparsed.peek() != null || !calls_finished.get()) {
+			if(unparsed.peek() != null)
+			{
+				parseDocument(unparsed.poll(), terms[i]);
+				i++;
+			}
+		}
+		finished_parsing.set(true);
+		
 	}
 	
 	
@@ -282,8 +296,13 @@ public class ParseDoc implements Runnable{
         thisMetric.set_parse_time(System.nanoTime()-start_time);
         
         
-        Notifications.task_finished("parse");
-        size.set(numClasses);
+        Notifications.task_finished("parse of " + term + " " + year);
+        try {
+			sizes.put(numClasses);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     

@@ -54,7 +54,7 @@ public class UploadToAWS implements Runnable{
 	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_input;
 	BlockingQueue<HashMap<String, AttributeValue>> key_input;
 	BlockingQueue<HashMap<String, AttributeValue>> put_input;
-	static AtomicInteger job_size;
+	static BlockingQueue<Integer> job_size;
 	static int job_progress;
 	
 	int upload_mode;
@@ -66,7 +66,8 @@ public class UploadToAWS implements Runnable{
 	double per_second;
 	List<Double> second_list;
 	
-	String term;
+	String terms[];
+	static String currentTerm;
 	String table;
 	static boolean begun_bar;
 	Metric thisMetric;
@@ -84,7 +85,7 @@ public class UploadToAWS implements Runnable{
 		update_input = shared.update_queue;
 		key_input = shared.key_queue;
 		put_input = shared.put_queue;
-		term = shared.term;
+		terms = shared.terms;
 		table = shared.table;
 		job_size = shared.size;
 		finished_converting = shared.converting;
@@ -108,6 +109,8 @@ public class UploadToAWS implements Runnable{
 		job_progress = 0;
 		second_list = new ArrayList<Double>();
 		long start_time = System.nanoTime();
+		int j = 0;
+		currentTerm = terms[j];
 		
 		while(true) {
 			/**setting second to count uploads per second**/
@@ -118,19 +121,26 @@ public class UploadToAWS implements Runnable{
 				second_list.add(this_second);
 				this_second = 0.0;
 				start_second = System.nanoTime();
-			}
+			}	
 			/**if the size of the job is equal to the current upload count, and they're not 0, return**/
-			if(job_size.get() == job_progress && job_progress != 0)
+			//currently nonfunctional
+			if(job_size.peek() != null && job_size.peek() == job_progress)
 			{
-				thisMetric.set_upload_time(System.nanoTime()-start_time);
-				for(double second : second_list)
-				{
-					per_second += second;
+				job_size.poll(); //removing the size of the completed job from the queue
+				job_progress = 0;
+				j++;
+				currentTerm = terms[j];
+
+				if(job_size.peek() == null) {
+					thisMetric.add_upload_time(System.nanoTime()-start_time);
+					for(double second : second_list)
+					{
+						per_second += second;
+					}
+					per_second = per_second/second_list.size();
+					thisMetric.add_upload_rate(per_second);
+					return;
 				}
-				per_second = per_second/second_list.size();
-				thisMetric.set_upload_rate(per_second);
-				thisMetric.set_total_uploads(job_progress);
-				return;
 			}
 
 			
@@ -151,7 +161,7 @@ public class UploadToAWS implements Runnable{
 						item_put(table, put_input.poll());
 					}
 				case 2 :
-					while(update_input.peek() != null || key_input.peek() != null)
+					while(update_input.peek() != null && key_input.peek() != null)
 					{
 						//the start_second 0-catcher at the beginning of the main while loop renders these checks redundant
 						if(start_second == 0)
@@ -179,14 +189,14 @@ public class UploadToAWS implements Runnable{
     private static void item_put(String tableName, HashMap<String, AttributeValue> toPush)
     {
     	final AmazonDynamoDB ddb = AmazonDynamoDBClientBuilder.defaultClient();
-    		if(job_size.get() == job_progress && job_progress != 0)
+    		if(job_size.peek() != null && job_size.peek() == job_progress)
     			return;
     		try {
                 ddb.putItem(tableName, toPush);
                 job_progress++;
                 this_second++;
-                if(job_size.get() != 0){
-                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.get(), begun_bar);
+                if(job_size.peek() != null){
+                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, currentTerm);
                 	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {
@@ -203,14 +213,14 @@ public class UploadToAWS implements Runnable{
     private static void item_update(String tableName, HashMap<String, AttributeValue> key, HashMap<String, AttributeValueUpdate> updates)
     {
     	final AmazonDynamoDB ddb = AmazonDynamoDBClientBuilder.defaultClient();
-    		if(job_size.get() == job_progress && job_progress != 0)
+    		if(job_size.peek() != null && job_size.peek() == job_progress)
     			return;
     		try {
                 ddb.updateItem(tableName, key, updates);
                 job_progress++;
                 this_second++;
-                if(job_size.get() != 0){
-                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.get(), begun_bar);
+                if(job_size.peek() != null){
+                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, currentTerm);
                 	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {
