@@ -19,14 +19,15 @@ public class Notifications {
 	static final String ERR = "[" + (char)27 + "[31mERROR" + (char)27 + "[39m] ";
 	static final String SYSMSG = "[" + (char)27 + "[34mINFO" + (char)27 + "[39m] ";
 	static final String SUCCESS = "[" + (char)27 + "[32mSUCCESS" + (char)27 + "[39m] ";
-	
+	static final String STATUS = "[" + (char)27 + "[33mSTATUS" + (char)27 + "[39m]";
+	static final String INPUT = "[" + (char)27 + "[33mINPUT" + (char)27 + "[39m]";
 	
 	/* initial user input */
 	static void setprefs(Prefs to_be_set)
 	{
 		Scanner input = new Scanner(System.in);
 		System.out.println(SYSMSG + "Data is available from Fall 2003 to mid-2020.");
-		System.out.println(SYSMSG + "Input format: [year term] to [year term] [MODE] [table name]");
+		System.out.print(SYSMSG + "Input format: [year term] to [year term] [MODE] [table name]\n" + INPUT + " ");
 		String[] prefs = input.nextLine().split(" ");
 		List<String> temp_terms = new ArrayList<String>();
 		int current_year = 100*(Integer.parseInt(prefs[0]));
@@ -130,20 +131,19 @@ public class Notifications {
 	//perhaps print a call time or latency or something (or address)
 	static void call_success()
 	{
-		System.out.println(SPACING + "              ");
-		System.out.println(SPACING + "--- server call complete ---" + "\n" + SPACING);
+		System.out.println(SUCCESS + "--- server call complete ---                                                             -");
 	}
 	
 	static void exit_msg()
 	{
-		System.out.println(SPACING + "\n"
-				+ SPACING + "\n"
-				+ SPACING + "\n"
-				+ SYSMSG +  "------- see metrics.log for program execution stats, exiting now -------");
-		System.out.println("\n" + SPACING + "\n" + SPACING);
-		System.out.println("(c) Matthew Lee, 2019");
-		System.out.println(SPACING + "MIT license");
-		System.out.println(SPACING + "\n" + SPACING);
+		System.out.println(SYSMSG + "\n"
+				+ SYSMSG + "\n"
+				+ SYSMSG + "\n"
+				+ SUCCESS +  "------- see metrics.log for program execution stats, exiting now -------");
+		System.out.println("\n" + SYSMSG + "\n" + SYSMSG);
+		System.out.println(SYSMSG + "(c) Matthew Lee, 2019");
+		System.out.println(SYSMSG + "MIT license");
+		System.out.println(SYSMSG + "\n" + SYSMSG);
 	}
 	
 	/* errors */

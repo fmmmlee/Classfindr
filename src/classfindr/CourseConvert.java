@@ -53,12 +53,11 @@ public class CourseConvert implements Runnable {
 		int k = 0;
 		Notifications.thread_spun("converter");
 		while(true) {
-			//this references a queue value will be from an arbitrary number of terms ago,
-			//as this thread will move on but the upload will not have removed the size value from the queue yet
-			if(parse_finished.get()) {
+			if(parse_finished.get() && input.peek() == null) {
 				thisMetric.set_conversion_time(System.nanoTime()-start_time);
 				Notifications.task_finished("all conversions");
 				still_converting.set(0);
+				thisMetric.set_total_uploads(k);
 				return;
 			}
 			while(input.peek() != null)

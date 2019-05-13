@@ -47,16 +47,15 @@ public class Waiting_Indicators {
     	}
 		
 		if(progress<goal)
-			System.out.print(" " + label + "   ["
-					+ StringUtils.repeat('=',(int) (length*((double) progress/((double) goal))))
+			System.out.print(STATUS + " " + label + "   ["
+					+ StringUtils.repeat('=',(int) (length*((double) progress/((double) goal)))) + ">"
 					+ StringUtils.repeat(' ', (int) (length*(1.0-((double) progress/((double) goal))))) + "]"
 					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal + "   \r");
 		else {
-			/*System.out.println(" "  + label + "   ["
+			System.out.println(SUCCESS + " "  + label + "   ["
 					+ StringUtils.repeat('=',(int) (length*((double) progress/((double) goal))))
 					+ StringUtils.repeat(' ', (int) (length*(1.0-((double) progress/((double) goal))))) + "]"
-					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal + "\n\n\n"
-					+ (char)27 + "[32m                  -~-~-~ Upload Complete ~-~-~-\n" + (char)27 + "[39m");*/
+					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal + "\n\n\n");
 		}
 	}
 	

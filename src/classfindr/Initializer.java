@@ -37,7 +37,7 @@ public class Initializer {
 			/* initializing shared data object */
 			final ThreadShare share = new ThreadShare(UPDATE, preferences.terms, preferences.table);
 			
-			/* calling WWU servers */
+			/* calling WWU servers on new thread */
 			CallServer call = new CallServer(share);
 			Thread call_thread = new Thread(call);
 			call_thread.start();
@@ -52,7 +52,7 @@ public class Initializer {
 			CompletableFuture<Void> upload_thread = CompletableFuture.runAsync(upload);
 			CompletableFuture<Void> converter_thread = CompletableFuture.runAsync(converter);
 			
-			/* watching output */
+			/* waiting for output */
 			parse_thread.get();
 			converter_thread.get();
 			upload_thread.get();
