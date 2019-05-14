@@ -9,6 +9,7 @@ package classfindr;
  */
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -71,45 +72,60 @@ public class CallServer implements Runnable{
                 instructor + "&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
     }
     
-    static Document fullTermQuery(String term) throws IOException
+    static Document fullTermQuery(String term) throws IOException, InterruptedException
     {
-    	//TODO: Notification for call for specific term
-    	long start = System.nanoTime();
-        String queryString = "sel_subj=dummy&sel_subj=dummy&sel_gur=dummy&sel_gur=dummy&sel_attr=dummy&sel_site=dummy&sel_day=dummy&sel_open=dummy&sel_crn=&term="
-        + term + "&sel_gur=All&sel_attr=All&sel_site=All&sel_subj=All&sel_inst=ANY&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
-        String theUrl = ("https://admin.wwu.edu/pls/wwis/wwsktime.ListClass");
-        Connection serverCall = Jsoup.connect(theUrl);
-        
-        serverCall.header("Host", HOST);
-        serverCall.header("User-Agent", USER_AGENT);
-        serverCall.header("Accept", ACCEPT);
-        serverCall.header("Accept-Language", ACCEPT_LANGUAGE);
-        serverCall.header("Accept-Encoding", ACCEPT_ENCODING);
-        serverCall.header("Referer", REFERER);
-        serverCall.header("Content-Type", CONTENT_TYPE);
-        serverCall.header("Content-Length", Integer.toString(queryString.length()));
-        serverCall.header("Connection", CONNECTION);
-        serverCall.header("Cookie", COOKIE);
-        serverCall.header("Upgrade-Insecure-Requests", INSECURE_REQS);
-        serverCall.requestBody(queryString);
-        serverCall.maxBodySize(0);
-        Document response = serverCall.post();
-        //adding a new call time to the metric object
-        info.add_call_time(System.nanoTime() - start);
-        
-        if(serverCall.response().statusCode() != 200)
-        {
-        	//call fulltermquery() again after jitter + backoff
-        }
-        if(response.select("table").size() < 2)
-        {
-        	Notifications.bad_response(term, serverCall.response().statusCode());
-        	File f = new File("response_log.html");
-        	FileUtils.writeStringToFile(f, response.outerHtml(), "UTF-8");
-        	throw new IOException();
-        	
-        }
-        return response;
+    	int calls = 0;
+    	Random newRandom = new Random();
+	    	while(calls < 6) {
+	    	//TODO: Notification for call for specific term
+	    	long start = System.nanoTime();
+	        String queryString = "sel_subj=dummy&sel_subj=dummy&sel_gur=dummy&sel_gur=dummy&sel_attr=dummy&sel_site=dummy&sel_day=dummy&sel_open=dummy&sel_crn=&term="
+	        + term + "&sel_gur=All&sel_attr=All&sel_site=All&sel_subj=All&sel_inst=ANY&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
+	        String theUrl = ("https://admin.wwu.edu/pls/wwis/wwsktime.ListClass");
+	        Connection serverCall = Jsoup.connect(theUrl);
+	        
+	        serverCall.header("Host", HOST);
+	        serverCall.header("User-Agent", USER_AGENT);
+	        serverCall.header("Accept", ACCEPT);
+	        serverCall.header("Accept-Language", ACCEPT_LANGUAGE);
+	        serverCall.header("Accept-Encoding", ACCEPT_ENCODING);
+	        serverCall.header("Referer", REFERER);
+	        serverCall.header("Content-Type", CONTENT_TYPE);
+	        serverCall.header("Content-Length", Integer.toString(queryString.length()));
+	        serverCall.header("Connection", CONNECTION);
+	        serverCall.header("Cookie", COOKIE);
+	        serverCall.header("Upgrade-Insecure-Requests", INSECURE_REQS);
+	        serverCall.requestBody(queryString);
+	        serverCall.maxBodySize(0);
+	        Document response = serverCall.post();
+	        //adding a new call time to the metric object
+	        info.add_call_time(System.nanoTime() - start);
+	        
+	        if(serverCall.response().statusCode() != 200)
+	        {
+	        	if(calls < 5) {
+		        	calls++;
+		        	Thread.sleep(newRandom.nextInt(50) + (2000*calls*calls));		//max wait 32 seconds @ 4 calls attempted, 1 call left before throwing exception
+		        	continue;
+	        	} else {
+	        		Notifications.bad_response(term, serverCall.response().statusCode());
+		        	File f = new File("response_log.html");
+		        	FileUtils.writeStringToFile(f, response.outerHtml(), "UTF-8");
+		        	throw new IOException();
+	        	}
+	        	//call fulltermquery() again after jitter + backoff
+	        }
+	        if(response.select("table").size() < 2)
+	        {
+	        	Notifications.bad_response(term, serverCall.response().statusCode());
+	        	File f = new File("response_log.html");
+	        	FileUtils.writeStringToFile(f, response.outerHtml(), "UTF-8");
+	        	throw new IOException();
+	        	
+	        }
+	        return response;
+    	}
+	    return null;
     }
 	
 	
