@@ -146,7 +146,6 @@ public class UploadToAWS implements Runnable{
 
 			
 			/**use some upload method depending on upload mode**/
-			if(put_input.peek() != null || update_input.peek() != null || key_input.peek() != null) {
 				switch(upload_mode)
 				{
 				case 1 :
@@ -201,7 +200,6 @@ public class UploadToAWS implements Runnable{
 				case 4 :	
 				
 				}
-			}
 		}
 	}
 	

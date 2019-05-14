@@ -12,7 +12,6 @@ package classfindr;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
@@ -52,14 +51,7 @@ public class CourseConvert implements Runnable {
 		long start_time = System.nanoTime();
 		int k = 0;
 		Notifications.thread_spun("converter");
-		while(true) {
-			if(parse_finished.get() && input.peek() == null) {
-				thisMetric.set_conversion_time(System.nanoTime()-start_time);
-				Notifications.task_finished("all conversions");
-				still_converting.set(false);
-				thisMetric.set_total_uploads(k);
-				return;
-			}
+		while(!parse_finished.get() || input.peek() != null) {
 			while(input.peek() != null)
 			{
 				try {
@@ -86,6 +78,12 @@ public class CourseConvert implements Runnable {
 				}
 			}
 		}
+		
+		thisMetric.set_conversion_time(System.nanoTime()-start_time);
+		Notifications.task_finished("all conversions");
+		still_converting.set(false);
+		thisMetric.set_total_uploads(k);
+		return;
 	}
 	
 	
