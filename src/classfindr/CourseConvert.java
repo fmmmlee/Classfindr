@@ -24,7 +24,7 @@ public class CourseConvert implements Runnable {
 	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_output;
 	BlockingQueue<HashMap<String, AttributeValue>> key_output;
 	BlockingQueue<HashMap<String, AttributeValue>> put_output;
-	AtomicInteger still_converting;
+	AtomicBoolean still_converting;
 	AtomicBoolean parse_finished;
 	Metric thisMetric;
 	
@@ -56,7 +56,7 @@ public class CourseConvert implements Runnable {
 			if(parse_finished.get() && input.peek() == null) {
 				thisMetric.set_conversion_time(System.nanoTime()-start_time);
 				Notifications.task_finished("all conversions");
-				still_converting.set(0);
+				still_converting.set(false);
 				thisMetric.set_total_uploads(k);
 				return;
 			}

@@ -31,36 +31,36 @@ public class Initializer {
 	{
 		Prefs preferences = new Prefs();
 		
-
+		/* accepting user input */
 		Notifications.setprefs(preferences);
 			
-			/* initializing shared data object */
-			final ThreadShare share = new ThreadShare(UPDATE, preferences.terms, preferences.table);
-			
-			/* calling WWU servers on new thread */
-			CallServer call = new CallServer(share);
-			Thread call_thread = new Thread(call);
-			call_thread.start();
-			
-			/* initializing class instances */
-			ParseDoc parse = new ParseDoc(share);
-			UploadToAWS upload = new UploadToAWS(share);
-			CourseConvert converter = new CourseConvert(share);
-			
-			/* spinning threads */
-			CompletableFuture<Void> parse_thread = CompletableFuture.runAsync(parse);
-			CompletableFuture<Void> upload_thread = CompletableFuture.runAsync(upload);
-			CompletableFuture<Void> converter_thread = CompletableFuture.runAsync(converter);
-			
-			/* waiting for output */
-			parse_thread.get();
-			converter_thread.get();
-			upload_thread.get();
-			
-			/* printing metrics to log */
-			share.metric.log_to_file("metrics.log");
-						
-
+		/* initializing shared data object */
+		final ThreadShare share = new ThreadShare(UPDATE, preferences.terms, preferences.table);
+		
+		/* calling WWU servers on new thread */
+		CallServer call = new CallServer(share);
+		Thread call_thread = new Thread(call);
+		call_thread.start();
+		
+		/* initializing class instances */
+		ParseDoc parse = new ParseDoc(share);
+		UploadToAWS upload = new UploadToAWS(share);
+		CourseConvert converter = new CourseConvert(share);
+		
+		/* spinning threads */
+		CompletableFuture<Void> parse_thread = CompletableFuture.runAsync(parse);
+		CompletableFuture<Void> upload_thread = CompletableFuture.runAsync(upload);
+		CompletableFuture<Void> converter_thread = CompletableFuture.runAsync(converter);
+		
+		/* waiting for output */
+		parse_thread.get();
+		converter_thread.get();
+		upload_thread.get();
+		
+		/* printing metrics to log */
+		share.metric.log_to_file("metrics.log");
+				
+		/* console exit message */
 		Notifications.exit_msg();
 	}
 }

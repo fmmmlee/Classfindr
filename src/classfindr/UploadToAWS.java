@@ -40,6 +40,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.*;
@@ -58,8 +59,8 @@ public class UploadToAWS implements Runnable{
 	static int job_progress;
 	
 	int upload_mode;
-	boolean batch_mode;
-	AtomicInteger finished_converting;
+	AtomicBoolean batch_mode;
+	AtomicBoolean finished_converting;
 	
 	long start_second;
 	static double this_second;
