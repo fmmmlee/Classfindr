@@ -55,7 +55,7 @@ public class Waiting_Indicators {
 			System.out.println(SUCCESS + " "  + label + "   ["
 					+ StringUtils.repeat('=',(int) (length*((double) progress/((double) goal))))
 					+ StringUtils.repeat(' ', (int) (length*(1.0-((double) progress/((double) goal))))) + "]"
-					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal + "\n\n\n");
+					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal);
 		}
 	}
 	

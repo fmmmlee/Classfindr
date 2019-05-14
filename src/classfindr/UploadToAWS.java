@@ -77,7 +77,7 @@ public class UploadToAWS implements Runnable{
 	
 	//TODO all the messages from Amazon's DB examples need to be changed
 	
-	//NO BATCH SUPPORT IN THIS VERSION 
+	//NO BATCH SUPPORT IN THIS VERSION
 	public UploadToAWS(ThreadShare shared)
 	{
 		upload_mode = shared.mode;

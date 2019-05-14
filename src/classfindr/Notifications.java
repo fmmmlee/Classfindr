@@ -140,7 +140,7 @@ public class Notifications {
 				+ SYSMSG + "\n"
 				+ SYSMSG + "\n"
 				+ SUCCESS +  "------- see metrics.log for program execution stats, exiting now -------");
-		System.out.println("\n" + SYSMSG + "\n" + SYSMSG);
+		System.out.println(SYSMSG + "\n" + SYSMSG);
 		System.out.println(SYSMSG + "(c) Matthew Lee, 2019");
 		System.out.println(SYSMSG + "MIT license");
 		System.out.println(SYSMSG + "\n" + SYSMSG);
