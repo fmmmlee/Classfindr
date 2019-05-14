@@ -30,5 +30,5 @@ Eventually, a service that scrapes WWU's classfinder and offers a mirror databas
 
 Here's a shot of what the UI looks like at this stage (or something close to it)
 <p align="left">
-  <img src="https://user-images.githubusercontent.com/30479162/57427361-69001b00-71d8-11e9-9c58-805538e9e126.JPG" width="500" title="a sample run of the scraper and uploader">
+  <img src="https://user-images.githubusercontent.com/30479162/57667061-20b97200-75b7-11e9-9650-8233ae3930ec.JPG" width="500" title="a sample run of the scraper and uploader">
 </p>
