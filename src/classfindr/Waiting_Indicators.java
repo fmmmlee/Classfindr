@@ -16,9 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 //TODO: make the progress bar portable and put it in this class
 public class Waiting_Indicators {
 
+	static final String ERR = "[" + (char)27 + "[31mERROR" + (char)27 + "[39m] ";
+	static final String SYSMSG = "[" + (char)27 + "[34mINFO" + (char)27 + "[39m] ";
+	static final String SUCCESS = "[" + (char)27 + "[32mSUCCESS" + (char)27 + "[39m] ";
+	static final String STATUS = "[" + (char)27 + "[33mSTATUS" + (char)27 + "[39m]";
 	static final String SPACING = "[     ] ";
-	static final String ERR = "[ERROR] ";
-	static final String SYSMSG = "[INFO] ";
 	
 	/* prints out dots in sequence */
 	public static void dots(Thread waiting_on, int num_dots)
@@ -38,23 +40,22 @@ public class Waiting_Indicators {
 	/* simple console progress bar */
 	//TODO: in the mid-600s / 2576 there was a hop at the end of the line; I assume it's an idiosyncrasy of the casts between double and int here
 	//also maybe change the header to be a parameter
-	public static void progress_bar(int length, int progress, int goal, boolean print_header)
+	public static void progress_bar(int length, int progress, int goal, boolean print_header, String label)
 	{
 		if(print_header) {
-			System.out.println("\n\n\n       -~-~-~-~-~ Amazon DynamoDB Upload Progress ~-~-~-~-~-       \n");
+			System.out.println(STATUS + " Amazon DynamoDB Upload Initiated");
     	}
 		
 		if(progress<goal)
-			System.out.print("   ["
-					+ StringUtils.repeat('|',(int) (length*((double) progress/((double) goal))))
+			System.out.print(STATUS + " " + label + "   ["
+					+ StringUtils.repeat('=',(int) (length*((double) progress/((double) goal)))) + ">"
 					+ StringUtils.repeat(' ', (int) (length*(1.0-((double) progress/((double) goal))))) + "]"
 					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal + "   \r");
 		else {
-			System.out.println("   ["
-					+ StringUtils.repeat('|',(int) (length*((double) progress/((double) goal))))
+			System.out.println(SUCCESS + " "  + label + "   ["
+					+ StringUtils.repeat('=',(int) (length*((double) progress/((double) goal))))
 					+ StringUtils.repeat(' ', (int) (length*(1.0-((double) progress/((double) goal))))) + "]"
-					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal + "\n\n\n"
-					+ (char)27 + "[32m                  -~-~-~ Upload Complete ~-~-~-\n" + (char)27 + "[39m");
+					+ StringUtils.repeat(" ", 6 - (int) Math.log10((double) progress)) + progress + "/" + goal);
 		}
 	}
 	

@@ -11,6 +11,7 @@ package classfindr;
 
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
@@ -23,8 +24,8 @@ public class CourseConvert implements Runnable {
 	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_output;
 	BlockingQueue<HashMap<String, AttributeValue>> key_output;
 	BlockingQueue<HashMap<String, AttributeValue>> put_output;
-	AtomicInteger still_parsing;
 	AtomicInteger still_converting;
+	AtomicBoolean parse_finished;
 	Metric thisMetric;
 	
 	/* constructor */
@@ -34,7 +35,7 @@ public class CourseConvert implements Runnable {
 		key_output = shared.key_queue;
 		update_output = shared.update_queue;
 		input = shared.course_queue;
-		still_parsing = shared.size;
+		parse_finished = shared.parse_finished;
 		still_converting = shared.converting;
 		mode = shared.mode;
 		thisMetric = shared.metric;
@@ -52,10 +53,11 @@ public class CourseConvert implements Runnable {
 		int k = 0;
 		Notifications.thread_spun("converter");
 		while(true) {
-			if(k == still_parsing.get() && k != 0) {
+			if(parse_finished.get() && input.peek() == null) {
 				thisMetric.set_conversion_time(System.nanoTime()-start_time);
-				Notifications.task_finished("conversion");
+				Notifications.task_finished("all conversions");
 				still_converting.set(0);
+				thisMetric.set_total_uploads(k);
 				return;
 			}
 			while(input.peek() != null)

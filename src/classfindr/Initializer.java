@@ -14,10 +14,10 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-final class Prefs{
+final class Prefs
+{
 	String table;
-	int year_start;
-	int year_end;
+	String[] terms = null;
 	int mode;
 }
 
@@ -33,27 +33,14 @@ public class Initializer {
 		
 
 		Notifications.setprefs(preferences);
-		int current_year = preferences.year_start;
-
-		while(current_year != preferences.year_end)
-		{
-			/*   */
-			String term = String.valueOf(current_year);			
-			
-			/* initializing shared metric object */
-			Metric term_stats = new Metric(term, preferences.table);
 			
 			/* initializing shared data object */
-			final ThreadShare share = new ThreadShare(UPDATE, term, preferences.table, term_stats);
+			final ThreadShare share = new ThreadShare(UPDATE, preferences.terms, preferences.table);
 			
-			/* calling WWU servers */
+			/* calling WWU servers on new thread */
 			CallServer call = new CallServer(share);
 			Thread call_thread = new Thread(call);
 			call_thread.start();
-			
-			/* waiting for call thread to exit */
-			Waiting_Indicators.dots(call_thread, 4);
-			Notifications.call_success();
 			
 			/* initializing class instances */
 			ParseDoc parse = new ParseDoc(share);
@@ -65,22 +52,15 @@ public class Initializer {
 			CompletableFuture<Void> upload_thread = CompletableFuture.runAsync(upload);
 			CompletableFuture<Void> converter_thread = CompletableFuture.runAsync(converter);
 			
-			/* watching output */
+			/* waiting for output */
 			parse_thread.get();
 			converter_thread.get();
 			upload_thread.get();
 			
 			/* printing metrics to log */
-			term_stats.log_to_file("metrics.log");
+			share.metric.log_to_file("metrics.log");
 						
-			/* setting the year */
-			current_year += 10;
-			if(current_year % 100 > 40)
-			{
-				current_year += 100;
-				current_year -= 40;
-			}
-		}
+
 		Notifications.exit_msg();
-	}	
+	}
 }
