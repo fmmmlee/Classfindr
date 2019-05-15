@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
-public class CourseConvert implements Runnable {
+public class CourseConverter implements Runnable {
 	
 	int mode;
 	BlockingQueue<Course> input;
@@ -28,7 +28,7 @@ public class CourseConvert implements Runnable {
 	Metric thisMetric;
 	
 	/* constructor */
-	CourseConvert(ThreadShare shared)
+	CourseConverter(ThreadShare shared)
 	{
 		put_output = shared.put_queue;
 		key_output = shared.key_queue;

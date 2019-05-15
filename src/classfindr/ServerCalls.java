@@ -4,7 +4,6 @@ package classfindr;
  * Matthew Lee
  * Spring 2019
  * Classfindr
- * Makes call to WWU servers and returns information
  * 
  */
 import java.io.File;
@@ -18,10 +17,13 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-//TODO: Multithread this and grab like all historical docs 2003-2018 concurrently
-//TODO: Implement exponential backoff algorithm and timeout to avoid committing seppuku during outages
 
-public class CallServer implements Runnable{
+
+/*
+ * Makes call to WWU servers and returns information
+ * 
+ */
+public class ServerCalls implements Runnable{
 	
     //Headers for the request to WWU servers
     private static final String HOST = "admin.wwu.edu";
@@ -40,7 +42,11 @@ public class CallServer implements Runnable{
     ThreadShare for_document;
     AtomicBoolean finished;
     
-    CallServer(ThreadShare shared)
+    /*
+     * 
+     * @param	shared	an object of the ThreadShare class that holds information used by this class as well as other classes during concurrent execution.
+     */
+    ServerCalls(ThreadShare shared)
     {
     	finished = shared.calls_finished;
     	terms = shared.terms;
@@ -72,11 +78,21 @@ public class CallServer implements Runnable{
                 instructor + "&sel_crse=&begin_hh=0&begin_mi=A&end_hh=0&end_mi=A&sel_cdts=%25";
     }
     
+    
+    /*
+     * Makes a POST request to the WWU server to retrieve data for a full term of classes.
+     * <p>
+     * Includes an exponential backoff algorithm with decorrelated jitter. The cap is about 60 seconds.
+     * 
+     * @param	term	the term to request classes for, in the format [year][term], where [term] is a multiple of 10 from 10 to 40, inclusive
+     * @return			a Document object representing the HTML response to the request sent
+     */
     static Document fullTermQuery(String term) throws IOException, InterruptedException
     {
-    	int calls = 0;
+    	int sleep_time = 3;
     	Random newRandom = new Random();
-	    	while(calls < 6) {
+    	Document response = null;
+	    	while(sleep_time < 60000) {
 	    	//TODO: Notification for call for specific term
 	    	long start = System.nanoTime();
 	        String queryString = "sel_subj=dummy&sel_subj=dummy&sel_gur=dummy&sel_gur=dummy&sel_attr=dummy&sel_site=dummy&sel_day=dummy&sel_open=dummy&sel_crn=&term="
@@ -97,15 +113,14 @@ public class CallServer implements Runnable{
 	        serverCall.header("Upgrade-Insecure-Requests", INSECURE_REQS);
 	        serverCall.requestBody(queryString);
 	        serverCall.maxBodySize(0);
-	        Document response = serverCall.post();
+	        response = serverCall.post();
 	        //adding a new call time to the metric object
 	        info.add_call_time(System.nanoTime() - start);
 	        
 	        if(serverCall.response().statusCode() != 200)
 	        {
-	        	if(calls < 5) {
-		        	calls++;
-		        	Thread.sleep(newRandom.nextInt(50) + (2000*calls*calls));		//max wait 32 seconds @ 4 calls attempted, 1 call left before throwing exception
+	        	if((sleep_time*=3) < 60000) {
+		        	Thread.sleep(newRandom.nextInt(sleep_time));		//max wait 60 seconds
 		        	continue;
 	        	} else {
 	        		Notifications.bad_response(term, serverCall.response().statusCode());
@@ -113,7 +128,6 @@ public class CallServer implements Runnable{
 		        	FileUtils.writeStringToFile(f, response.outerHtml(), "UTF-8");
 		        	throw new IOException();
 	        	}
-	        	//call fulltermquery() again after jitter + backoff
 	        }
 	        if(response.select("table").size() < 2)
 	        {
@@ -121,7 +135,6 @@ public class CallServer implements Runnable{
 	        	File f = new File("response_log.html");
 	        	FileUtils.writeStringToFile(f, response.outerHtml(), "UTF-8");
 	        	throw new IOException();
-	        	
 	        }
 	        return response;
     	}

@@ -33,7 +33,7 @@ public class Metric {
 	/*********setters*********/
 	public synchronized void add_call_time(long time)
 	{
-		call_time = time;
+		call_time += time;
 	}
 	
 	public synchronized void set_conversion_time(long time)
@@ -72,7 +72,7 @@ public class Metric {
 			logs.println("----------------------------------------------");
 			logs.println("Table: " + table);
 			//TODO: Term span here
-			logs.println("Server Call time: " + call_time);
+			logs.println("Total Server Call time: " + call_time);
 			logs.println("Parse Time: " + parse_time + " nsec");
 			logs.println("Conversion Time: " + conversion_time + " nsec");
 			logs.println("Uploads Queued: " + total_uploads);

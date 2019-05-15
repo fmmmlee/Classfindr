@@ -73,6 +73,8 @@ public class UploadToAWS implements Runnable{
 	static boolean begun_bar;
 	Metric thisMetric;
 	
+	//TODO write interface for common AWS SDK functions, then implement here
+	
 	//progress bar currently takes in a boolean to decide whether to print a message or not
 	//it's hacky, unnecessary and I need to change it at some point
 	

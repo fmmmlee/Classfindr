@@ -27,7 +27,7 @@ public class ThreadShare {
 	/* output of CallServer/input of ParseDoc */
 	BlockingQueue<Document> unparsed = new LinkedBlockingQueue<Document>();
 	
-	/* output of ParseDoc/input of CourseConvert */
+	/* output of ParseDoc/input of CourseConverter */
 	BlockingQueue<Course> course_queue = new LinkedBlockingQueue<Course>();
 	
 	/* output of CourseConvert/input of UploadToAWS */

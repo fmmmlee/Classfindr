@@ -4,7 +4,7 @@ package classfindr;
  * Matthew Lee
  * Spring 2019
  * Classfindr
- * Spawn Instances
+ * Spawns instances of threads and executes.
  * 
  * 
  * 
@@ -38,14 +38,14 @@ public class Initializer {
 		final ThreadShare share = new ThreadShare(UPDATE, preferences.terms, preferences.table);
 		
 		/* calling WWU servers on new thread */
-		CallServer call = new CallServer(share);
+		ServerCalls call = new ServerCalls(share);
 		Thread call_thread = new Thread(call);
 		call_thread.start();
 		
 		/* initializing class instances */
 		ParseDoc parse = new ParseDoc(share);
 		UploadToAWS upload = new UploadToAWS(share);
-		CourseConvert converter = new CourseConvert(share);
+		CourseConverter converter = new CourseConverter(share);
 		
 		/* spinning threads */
 		CompletableFuture<Void> parse_thread = CompletableFuture.runAsync(parse);
