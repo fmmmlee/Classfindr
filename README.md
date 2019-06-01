@@ -8,7 +8,7 @@ Eventually, a service that scrapes WWU's classfinder and offers a mirror databas
 
 ## Current ToDo
 - Write functions to read from the database
-- Overhaul document parser; it's wildly overcomplicated for what it needs to be
+- Overhaul document parser; it's wildly overcomplicated for what it needs to do
 - Implement BatchWriteItem
 - Possibly spin more threads off of update_thread to more quickly upload the data 
 - Add constraints for requests to WWU servers in a YAML or JSON
