@@ -1,3 +1,3 @@
 language: java
 sudo: false
-script: mvn install --debug -e -P travis
+script: mvn clean install -P travis
