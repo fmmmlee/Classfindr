@@ -1,4 +1,4 @@
-# Classfindr
+# Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr)
 
 Goal: a service that scrapes WWU's classfinder and offers a mirror database with more diverse and accessible tools.
 
