@@ -1,11 +1,11 @@
 # Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr)
 
-Goal: a service that scrapes WWU's classfinder and offers a mirror database with more diverse and accessible tools.
+**Goal:** a service that scrapes WWU's classfinder and offers a mirror database with more diverse and accessible tools.
 
-**Current status:** Not in a usable state for an end user, but things are coming along well, and it's functional for writing to my database. Future updates will focus on writing to a local database rather than AWS in order to avoid the upload bottleneck.
+**Current status:** No tools are available for an end user, but the program is functional for scraping data and uploading to AWS. Future updates will focus on writing to a local database rather than AWS in order to avoid the upload bottleneck.
 
 **Building:** I use Maven to build the project.
-  1. Clone/download the repository, navigate to the folder where you put it (in the directory with the pom.xml), and run `maven clean install` in terminal
+  1. Clone/download the repository, navigate to the folder where you put it (in the directory with the pom.xml), and run `mvn clean install` in terminal
   2. This should produce a usable uberjar (about 9 MB at the time of this commit).
   3. Ensure that you have the <a href="https://docs.aws.amazon.com/sdk-for-java/v2/developer-guide/setup-install.html">AWS SDK</a> configured on your system.
   4. The tool should be ready to run.
