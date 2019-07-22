@@ -14,13 +14,13 @@ package classfindr;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -101,6 +101,35 @@ public class ParseDoc implements Runnable{
     	String crnstring = "";
     	byte[] encoded_duplicates;
     	String duplicatestring = "";
+    	
+    	if(!Files.exists(Paths.get("crn.json")))
+    	{
+    		try {
+				Files.createFile(Paths.get("crn.json"));
+				FileWriter blankWrite = new FileWriter("crn.json", true);
+				PrintWriter blankWriter = new PrintWriter(blankWrite);
+				blankWriter.print("[]");
+				blankWriter.close();
+				blankWrite.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    	if(!Files.exists(Paths.get("duplicates.json")))
+    	{
+    		try {
+				Files.createFile(Paths.get("duplicates.json"));
+				FileWriter blankWrite = new FileWriter("duplicates.json", true);
+				PrintWriter blankWriter = new PrintWriter(blankWrite);
+				blankWriter.print("[]");
+				blankWriter.close();
+				blankWrite.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
     	try {
 			encodedFile = Files.readAllBytes(Paths.get("crn.json"));
 			crnstring = new String(encodedFile, "UTF-8");
@@ -121,7 +150,7 @@ public class ParseDoc implements Runnable{
     	long start_time = System.nanoTime();
     	
     	int numClasses = 0;
-    	int batchSize = 0;
+    	//int batchSize = 0;
         /*
          * 
          * TODO: Database Integration
