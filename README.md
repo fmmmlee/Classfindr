@@ -1,6 +1,6 @@
 # Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr)
 
-**Goal:** a service that scrapes WWU's classfinder and offers a mirror database with more diverse and accessible tools.
+**Goal:** a service that scrapes Western Washington University's classfinder and generates a mirror database with more diverse and accessible tools.
 
 **Current status:** No tools are available for an end user, but the program is functional for scraping data and uploading to AWS. Future updates will focus on writing to a local database rather than AWS in order to avoid the upload bottleneck.
 
