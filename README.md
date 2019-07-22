@@ -24,9 +24,8 @@
 
 ## Current ToDo
 - Add writing to a local database instead of DynamoDB
-- Write functions to read from DynamoDB
+- Write functions to read from DynamoDB/local database
 - Add config file to direct whether to write to local or AWS
-- Auto-create missing duplicate-checking files if not present
 - Overhaul document parser; it's wildly overcomplicated for what it needs to do
 - Implement BatchWriteItem
 - Possibly spin more threads off of update_thread to more quickly upload the data
@@ -37,6 +36,7 @@
 - Implement a metrics function with timers to analyze speed of different implementations
 - check AWS traffic tier limitations and check if requests need to be metered
 - Implement duplicate CRN checker
+- Auto-create missing duplicate-checking files if not present
 - Comment clarification
 
 ### "Sometime" - low-priority long term possible features
