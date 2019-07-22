@@ -15,9 +15,7 @@
   1. Clone or download the repository
   2. Navigate to the repository folder
   3. Run `mvn clean install` in terminal - this should produce an uberjar (about 9 MB at the time of this commit).
-  4. Create crn.json and duplicates.json (empty files with "{}" (no quotes) as the only text). This step will be removed with a future update.
-  5. The tool should be ready to use; instructions are displayed when running.
-  6. Run with `java -jar [name of Classfindr jar]`
+  4. Run with `java -jar [name of Classfindr jar]`
 
 ### Built With
 - <a href="https://maven.apache.org/">Maven</a>
