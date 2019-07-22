@@ -27,6 +27,8 @@ public class Notifications {
 	{
 		Scanner input = new Scanner(System.in);
 		System.out.println(SYSMSG + "Data is available from Fall 2003 to mid-2020.");
+		System.out.println(SYSMSG + "Modes: INSERT or UPDATE");
+		System.out.println(SYSMSG + "Example Command: 2012 Fall to 2013 Summer UPDATE courses");
 		System.out.print(SYSMSG + "Input format: [year term] to [year term] [MODE] [table name]\n" + INPUT + " ");
 		String[] prefs = input.nextLine().split(" ");
 		List<String> temp_terms = new ArrayList<String>();
