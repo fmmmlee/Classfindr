@@ -9,6 +9,7 @@
 ### Prerequisites
 
 - <a href="https://docs.aws.amazon.com/sdk-for-java/v2/developer-guide/setup-install.html">**AWS SDK**</a> - see link for setup and configuration
+- Maven
 
 ### Setting Up:
 
