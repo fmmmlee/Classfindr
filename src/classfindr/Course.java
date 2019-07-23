@@ -29,6 +29,61 @@ public class Course{
 	
 	/*
 	 * 
+	 * Create a table entry for local SQL DB
+	 * 
+	 * TODO: May make this a single long concatenation instead of multiple +=, as that would be less readable but faster
+	 */
+	public String generateLocalInsert()
+	{
+		String statement = "VALUES(";
+		statement += termNumFormat() + ",";
+		statement += courseInfo.get("crn") + ",";
+		statement += courseInfo.get("available") + ",";
+		statement += courseInfo.get("capacity") + ",";
+		statement += courseInfo.get("enrolled") + ",";
+		statement += courseInfo.get("description") + ",";
+		statement += courseInfo.get("start_date") + ",";
+		statement += courseInfo.get("end_date") + ",";
+		statement += courseInfo.get("instructor") + ",";
+		statement += courseInfo.get("number") + ",";
+		statement += courseInfo.get("subject") + ",";
+		statement += courseInfo.get("term") + ",";
+		statement += courseInfo.get("year") + ",";
+		statement += courseInfo.get("building") + ",";
+		statement += courseInfo.get("meet_times") + ",";
+		statement += courseInfo.get("credits") + ",";
+		statement += courseInfo.get("prereqs") + ",";
+		statement += courseInfo.get("start_time") + ",";
+		statement += courseInfo.get("end_time") + ",";
+		statement += courseInfo.get("restr") + ",";
+		statement += courseInfo.get("extr_chgs");
+		statement += ");";
+		return statement;
+	}
+	
+	/* generates a number to represent the term of the course object */
+	private String termNumFormat()
+	{
+		String termNumber = "";
+		termNumber += courseInfo.get("year");
+		String term = courseInfo.get("term");
+		switch(term)
+		{
+			case "Winter" :
+				termNumber += "01";
+			case "Spring" :
+				termNumber += "02";
+			case "Summer" :
+				termNumber += "03";
+			case "Fall" :
+				termNumber += "04";
+		}
+		return termNumber;
+	}
+	
+	
+	/*
+	 * 
 	 * Creating a table entry for DynamoDB
 	 * 
 	 */

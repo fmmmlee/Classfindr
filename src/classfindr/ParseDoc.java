@@ -150,14 +150,6 @@ public class ParseDoc implements Runnable{
     	long start_time = System.nanoTime();
     	
     	int numClasses = 0;
-    	//int batchSize = 0;
-        /*
-         * 
-         * TODO: Database Integration
-         * https://sdk.amazonaws.com/java/api/latest/
-         * DynamoDbClient or DynamoDbAsyncClient
-         *
-         */
         // year/term setup
         String year = year_term.substring(0, 4);
         String term = "";
