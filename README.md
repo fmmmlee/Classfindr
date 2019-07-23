@@ -2,13 +2,14 @@
 
 **Goal:** a service that scrapes Western Washington University's classfinder and generates a mirror database with more diverse and accessible tools.
 
-**Current status:** No tools are available for an end user, but the program is functional for scraping data and uploading to AWS. Future updates will focus on writing to a local database rather than AWS in order to avoid the upload bottleneck.
+**Current status:** No tools are available for an end user, but the program is functional for scraping data and uploading to AWS. Update focus is currently on implementing writing to a local database rather than AWS in order to avoid the bottleneck from AWS traffic tier limits.
 
 ## Building:
 
 ### Prerequisites
 
 - <a href="https://docs.aws.amazon.com/sdk-for-java/v2/developer-guide/setup-install.html">**AWS SDK**</a> - see link for setup and configuration
+- <a href="https://maven.apache.org/">**Maven**</a>
 
 ### Setting Up:
 
