@@ -21,48 +21,76 @@ import org.jsoup.nodes.Document;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
-
+/**
+ *
+ * Object shared between various different threads that holds variables and other objects used by them, often concurrently
+ *
+ */
 public class ThreadShare {
 	
-	/* output of CallServer/input of ParseDoc */
+	/** output of CallServer/input of ParseDoc */
 	BlockingQueue<Document> unparsed = new LinkedBlockingQueue<Document>();
 	
-	/* output of ParseDoc/input of CourseConverter */
+	/** output of ParseDoc/input of CourseConverter */
 	BlockingQueue<Course> course_queue = new LinkedBlockingQueue<Course>();
 	
-	/* output of CourseConvert/input of UploadToAWS */
+	/** queue for uploading to AWS in insert mode - output of CourseConvert/input of UploadToAWS */
 	BlockingQueue<HashMap<String, AttributeValue>> put_queue;
+	/**queue for keys when uploading to AWS in update mode - output of CourseConvert/input of UploadToAWS */
 	BlockingQueue<HashMap<String, AttributeValue>> key_queue;
+	/**queue for items when uploading to AWS in update mode - output of CourseConvert/input of UploadToAWS */
 	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_queue;
 	
-	/* size of each upload job */
+	
+	/** queue for update statements for local DB - output of CourseConvert/input of AccessLocalDB */
+	BlockingQueue<String> update_local;
+	/** queue for insert statements for local DB - output of CourseConvert/input of AccessLocalDB */
+	BlockingQueue<String> put_local;
+	
+	
+	/** size of each upload job */
 	BlockingQueue<Integer> size = new LinkedBlockingQueue<Integer>();
 	
-	/* UPDATE vs PUT */
+	/** indicates update or insert */
 	int mode;
 	
-	/* booleans to keep track of unfinished/finished tasks */ 	//alternative to these booleans - check if thread is alive
+	/** indicates type of destination database (AWS or local) */
+	int database_type;
+	
+	
+	/** tracks whether server call is complete */
 	AtomicBoolean calls_finished = new AtomicBoolean(false);
+	/** tracks whether html parsing is complete */
 	AtomicBoolean parse_finished = new AtomicBoolean(false);
+	/** tracks whether object conversion is complete */
 	AtomicBoolean converting = new AtomicBoolean(true);
 	
-	/* batch mode - not implemented yet */
+	
+	/** batch mode - not implemented yet */
 	AtomicBoolean batch_mode = new AtomicBoolean(false);
 	
-	/* array with all terms that will be uploaded */
+	/** array with all terms that will be uploaded */
 	String[] terms;
-	/* upload destination */
+	/** name of table in destination database */
 	String table;
-	/* object that holds execution stats and information */
+	/** object that holds execution stats and information */
 	Metric metric;
 
-	/* constructor */
-	ThreadShare(int mode_in, String[] terms_in, String table_in)
+	/**
+	 * Constructor
+	 * 
+	 * @param mode_in the upload mode to use (sets local variable mode)
+	 * @param terms_in array of strings showing all terms being processed (sets local variable terms)
+	 * @param table_in name of table in destination database (sets local variable table)
+	 */
+	public ThreadShare(int mode_in, String[] terms_in, String table_in)
 	{
 		mode = mode_in;
 		terms = terms_in;
 		table = table_in;
 		metric = new Metric(terms_in, table_in);
+		
+		//TODO: Add additional switch/conditional based on database_type and initialize queues based on that
 		
 		
 		/* initializing queues depending on specified mode */
@@ -76,7 +104,6 @@ public class ThreadShare {
 			update_queue = new LinkedBlockingQueue<HashMap<String, AttributeValueUpdate>>();
 			break;
 		}
-		
 		
 	}
 	

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
+//TODO: Add mode check (preferably on thread spin, not run) and putting items into localDB queues
 public class CourseConverter implements Runnable {
 	
 	int mode;
