@@ -19,18 +19,31 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 //TODO: Add mode check (preferably on thread spin, not run) and putting items into localDB queues
 public class CourseConverter implements Runnable {
 	
-	int mode;
-	BlockingQueue<Course> input;
+	int mode; 			//1 = insert, 2 = update
+	int destination; 	//1 = local, 2 = AWS
+	
+	BlockingQueue<Course> input; //input to this thread
+	
+	/* outputs for AWS */
 	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_output;
 	BlockingQueue<HashMap<String, AttributeValue>> key_output;
 	BlockingQueue<HashMap<String, AttributeValue>> put_output;
+	
+	/* outputs for local DB */
+	BlockingQueue<String> update_local;
+	BlockingQueue<String> insert_local;
+	
+	/* tracking execution status */
 	AtomicBoolean still_converting;
 	AtomicBoolean parse_finished;
+	
+	/* shared metric - this thread contributes conversion time */
 	Metric thisMetric;
 	
 	/* constructor */
 	CourseConverter(ThreadShare shared)
 	{
+		destination = shared.database_type;
 		put_output = shared.put_queue;
 		key_output = shared.key_queue;
 		update_output = shared.update_queue;
@@ -41,10 +54,10 @@ public class CourseConverter implements Runnable {
 		thisMetric = shared.metric;
 	}
 	
-	/* 
-	 * just keeps watching the input queue and if there's something on it,
-	 * converts it according to specified mode and puts those new objects
-	 * on the appropriate output queue(s)
+	/**
+	 * Watches the input queue and if there is something on it,
+	 * converts it according to specified mode and puts the output in the appropriate queue(s).
+	 * Continues running until queue is empty and parse thread reports finished.
 	 */
 	
 	public void run()
@@ -74,7 +87,6 @@ public class CourseConverter implements Runnable {
 						
 					}
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

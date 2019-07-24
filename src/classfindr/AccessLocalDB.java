@@ -75,6 +75,7 @@ public class AccessLocalDB implements Runnable
 	
 	
 	/**upload incoming objects from queue**/
+	@SuppressWarnings("unused")
 	private void handle_queue()
 	{
 		begun_bar = true;
@@ -132,7 +133,11 @@ public class AccessLocalDB implements Runnable
 							this_second = 0;
 							start_second = System.nanoTime();
 						}
-						insertTable(db_conn, put_input.poll());
+						try {
+							insertTable(db_conn, put_input.poll());
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
 						b++;
 					}
 				case 2 :
@@ -232,10 +237,11 @@ public class AccessLocalDB implements Runnable
 	 * insert item into table
 	 * 
 	 */
-	public void insertTable(Connection database, String to_insert)
+	public void insertTable(Connection database, String to_insert) throws SQLException
 	{
 		String statement = "INSERT INTO " + table + " " + to_insert;
-		
+		Statement table_query = database.createStatement();
+		table_query.execute(statement);
 	}
 	
 	public void updateTable(Connection database, String to_insert)
