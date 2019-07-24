@@ -1,4 +1,4 @@
-# Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr) ![Current Version](https://img.shields.io/badge/version-0.3.0-blue.svg?style=flat)
+# Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr) [![Current Version](https://img.shields.io/badge/version-0.3.0-blue.svg?style=flat)](https://github.com/fmmmlee/Classfindr/blob/master/pom.xml)
 
 **Goal:** a service that scrapes Western Washington University's classfinder and generates a mirror database with more diverse and accessible tools.
 
