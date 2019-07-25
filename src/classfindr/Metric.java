@@ -13,15 +13,21 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * A class to store information about the program's current execution.
+ * 
+ * @author Matthew Lee
+ *
+ */
 public class Metric {
 	long call_time;
-	 long conversion_time;
-	 long parse_time;
-	 long upload_time;
-	 double uploads_per_second;
-	 int total_uploads;
-
-	 String table;
+	long conversion_time;
+	long parse_time;
+	long upload_time;
+	double uploads_per_second;
+	int total_uploads;
+	
+	String table;
 	
 	 
 	/* constructor */
@@ -62,7 +68,12 @@ public class Metric {
 	}
 	
 	
-	/* printing to log file */
+	/**
+	 * Writes various metrics to a text file. This method appends the text to any information that may already be in the file specified by the {@code filename} parameter.
+	 * 
+	 * @param filename the file to write to
+	 * @throws IOException if there is a problem accessing or writing to the file specified in {@code filename}
+	 */
 	public synchronized void log_to_file(String filename) throws IOException
 	{
 		FileWriter append = new FileWriter(filename, true);

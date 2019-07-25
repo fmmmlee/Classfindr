@@ -90,7 +90,7 @@ public class UploadToAWS implements Runnable{
 		put_input = shared.put_queue;
 		terms = shared.terms;
 		table = shared.table;
-		job_size = shared.size;
+		job_size = shared.upload_sizes;
 		finished_converting = shared.converting;
 		thisMetric = shared.metric;
 	}
@@ -114,7 +114,6 @@ public class UploadToAWS implements Runnable{
 		long start_time = System.nanoTime();
 		int j = 0;
 		currentTerm = terms[j];
-		int b = 0; //debug
 		while(true) {
 			/**setting second to count uploads per second**/
 			if(start_second == 0)
@@ -161,7 +160,6 @@ public class UploadToAWS implements Runnable{
 							start_second = System.nanoTime();
 						}
 						item_put(table, put_input.poll());
-						b++;
 					}
 				case 2 :
 					while(update_input.peek() != null && key_input.peek() != null)
@@ -193,8 +191,6 @@ public class UploadToAWS implements Runnable{
 							this_second = 0;
 							start_second = System.nanoTime();
 						}
-						
-						b++;
 						item_update(table, key_input.poll(), update_input.poll());
 					}
 				case 3 :

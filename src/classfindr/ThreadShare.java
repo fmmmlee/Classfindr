@@ -43,18 +43,16 @@ public class ThreadShare {
 	
 	
 	/** queue for update statements for local DB - output of CourseConvert/input of AccessLocalDB */
-	BlockingQueue<String> update_local;
-	/** queue for insert statements for local DB - output of CourseConvert/input of AccessLocalDB */
-	BlockingQueue<String> put_local;
+	BlockingQueue<String> local_queue;
 	
 	
 	/** size of each upload job */
-	BlockingQueue<Integer> size = new LinkedBlockingQueue<Integer>();
+	BlockingQueue<Integer> upload_sizes = new LinkedBlockingQueue<Integer>();
 	
 	/** indicates update or insert */
 	int mode;
 	
-	/** indicates type of destination database (AWS or local) */
+	/** indicates type of destination database (local = 0, 1 = AWS) */
 	int database_type;
 	
 	
@@ -76,6 +74,7 @@ public class ThreadShare {
 	/** object that holds execution stats and information */
 	Metric metric;
 
+	
 	/**
 	 * Constructor
 	 * 
@@ -83,8 +82,9 @@ public class ThreadShare {
 	 * @param terms_in array of strings showing all terms being processed (sets local variable terms)
 	 * @param table_in name of table in destination database (sets local variable table)
 	 */
-	public ThreadShare(int mode_in, String[] terms_in, String table_in)
+	public ThreadShare(int dest, int mode_in, String[] terms_in, String table_in)
 	{
+		database_type = dest;
 		mode = mode_in;
 		terms = terms_in;
 		table = table_in;

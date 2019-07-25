@@ -51,7 +51,7 @@ public class ParseDoc implements Runnable{
 		calls_finished = shared.calls_finished;
 		terms = shared.terms;
 		toBeReturned = shared.course_queue;
-		sizes = shared.size;
+		sizes = shared.upload_sizes;
 		finished_parsing = shared.parse_finished;
 		thisMetric = shared.metric;
 	}

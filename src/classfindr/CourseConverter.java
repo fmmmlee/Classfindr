@@ -2,7 +2,7 @@ package classfindr;
 /*
  * 
  * Matthew Lee
- * Spring 2019
+ * Summer 2019
  * Classfindr
  * Convert Course objects into appropriate objects for upload to DynamoDB
  * 
@@ -30,8 +30,7 @@ public class CourseConverter implements Runnable {
 	BlockingQueue<HashMap<String, AttributeValue>> put_output;
 	
 	/* outputs for local DB */
-	BlockingQueue<String> update_local;
-	BlockingQueue<String> insert_local;
+	BlockingQueue<String> local_output;
 	
 	/* tracking execution status */
 	AtomicBoolean still_converting;
@@ -43,6 +42,7 @@ public class CourseConverter implements Runnable {
 	/* constructor */
 	CourseConverter(ThreadShare shared)
 	{
+		local_output = shared.local_queue;
 		destination = shared.database_type;
 		put_output = shared.put_queue;
 		key_output = shared.key_queue;

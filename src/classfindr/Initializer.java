@@ -27,15 +27,19 @@ public class Initializer {
 	static final int PUT = 1;
 	static final int UPDATE = 2;
 	
+	/* database destinations */
+	static final int LOCAL = 0;
+	static final int AWS = 1;
+	
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException
 	{
 		Prefs preferences = new Prefs();
 		
-		/* accepting user input */
+		/* accepting user input */ //TODO: accept user input for destination and upload type as well, then pare down constructor for ThreadShare
 		Notifications.setprefs(preferences);
 			
 		/* initializing shared data object */
-		final ThreadShare share = new ThreadShare(UPDATE, preferences.terms, preferences.table);
+		final ThreadShare share = new ThreadShare(AWS, UPDATE, preferences.terms, preferences.table); //TODO: Have ThreadShare just accept a Prefs object
 		
 		/* calling WWU servers on new thread */
 		ServerCalls call = new ServerCalls(share);

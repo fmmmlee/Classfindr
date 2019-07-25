@@ -2,7 +2,7 @@ package classfindr;
 /*
  * 
  * Matthew Lee
- * Spring 2019
+ * Summer 2019
  * Classfindr
  * Course Class
  * 
@@ -11,6 +11,7 @@ package classfindr;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,46 +19,66 @@ import com.amazonaws.services.dynamodbv2.model.AttributeAction;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
-
+//TODO: Make crndate get added to the hash table during parse
 public class Course{
 	
+	/** holds all the information about a course */
 	public final HashMap<String, String> courseInfo = new HashMap<String, String>();
 
-	//default constructor
-	public Course(){}
+	
+	public Course(){}	//default constructor
 	
 	
-	/*
+	
+	
+	
+	
+	/******* FOR LOCAL DATABASE *******/
+	
+	
+	
+	
+	/**
+	 * Generate a SQL query to insert a tuple representing this course into a table
 	 * 
-	 * Create a table entry for local SQL DB
-	 * 
-	 * TODO: May make this a single long concatenation instead of multiple +=, as that would be less readable but faster
+	 * @param table_name the table to be updated
+	 * @return
 	 */
-	public String generateLocalInsert()
+	public String generateLocalInsert(String table_name)
 	{
-		String statement = "VALUES(";
-		statement += termNumFormat() + ",";
-		statement += courseInfo.get("crn") + ",";
-		statement += courseInfo.get("available") + ",";
-		statement += courseInfo.get("capacity") + ",";
-		statement += courseInfo.get("enrolled") + ",";
-		statement += courseInfo.get("description") + ",";
-		statement += courseInfo.get("start_date") + ",";
-		statement += courseInfo.get("end_date") + ",";
-		statement += courseInfo.get("instructor") + ",";
-		statement += courseInfo.get("number") + ",";
-		statement += courseInfo.get("subject") + ",";
-		statement += courseInfo.get("term") + ",";
-		statement += courseInfo.get("year") + ",";
-		statement += courseInfo.get("building") + ",";
-		statement += courseInfo.get("meet_times") + ",";
-		statement += courseInfo.get("credits") + ",";
-		statement += courseInfo.get("prereqs") + ",";
-		statement += courseInfo.get("start_time") + ",";
-		statement += courseInfo.get("end_time") + ",";
-		statement += courseInfo.get("restr") + ",";
-		statement += courseInfo.get("extr_chgs");
-		statement += ");";
+		String columns = "(crndate, ";
+		String values = "(" + termNumFormat() + ", ";
+		
+		/* adding keys and values to column and value portions of query respectively */
+		for(Entry<String, String> course : courseInfo.entrySet())
+		{
+			columns += course.getKey() + ",";
+			values += course.getValue() + ",";
+		}
+		
+		columns = columns.substring(0, columns.length()-1) + ")";		//replacing trailing ',' with a close parenthesis
+		values = values.substring(0, values.length()-1) + ")";			//replacing trailing ',' with a close parenthesis
+		
+		
+		return "INSERT INTO " + table_name + " " + columns + " " + values + ";";
+	}
+	
+	
+	/**
+	 * Generate a SQL query to update a table with the information in this course object
+	 * 
+	 * @param table_name the table to be updated
+	 * @return
+	 */
+	public String generateLocalUpdate(String table_name)
+	{
+		String statement = "UPDATE " + table_name + " SET ";
+		statement += "crndate = " + termNumFormat();
+		for(Entry<String, String> course : courseInfo.entrySet())
+		{
+			statement += ", " + course.getKey() + " = " + course.getValue();
+		}
+		statement += " WHERE crndate = " + termNumFormat() + ";";
 		return statement;
 	}
 	
@@ -82,10 +103,20 @@ public class Course{
 	}
 	
 	
-	/*
-	 * 
-	 * Creating a table entry for DynamoDB
-	 * 
+	
+	
+	
+	
+	/******* FOR AWS DYNAMODB *******/
+	
+	
+	
+	
+	
+	
+	/**
+	 * Used to generate a tuple for insertion to a table on AWS DynamoDB
+	 * @return a HashMap of strings and attribute values for DynamoDB, which can be uploaded using the AWS SDK
 	 */
 	public HashMap<String, AttributeValue> generateItemPush()
 	{	
@@ -98,10 +129,9 @@ public class Course{
 	}
 	
 	
-	/*
-	 * 
-	 * Creates Item Update
-	 * 
+	/**
+	 * Used to generate an update to a table on AWS DynamoDB
+	 * @return a HashMap of strings and attribute value updates for DynamoDB, which can be uploaded using the AWS SDK
 	 */
 	public HashMap<String, AttributeValueUpdate> generateItemUpdate()
 	{
@@ -122,11 +152,11 @@ public class Course{
 		return updates;
 	}
 	
-	/*
+
+	/**
 	 * 
-	 * Creates Item Key
-	 * 
-	 */	
+	 * @return the primary key for a tuple on AWS DynamoDB
+	 */
 	public HashMap<String, AttributeValue> itemKey()
 	{
 		HashMap<String, AttributeValue> key = new HashMap<String, AttributeValue>();
@@ -141,11 +171,13 @@ public class Course{
 	}
 	
 	
-	/*
-	 * 
-	 * Debugging
-	 * 
-	 */
+	
+	
+	
+	/******* DEBUGGING *******/
+	
+	
+	
 	public String printInfo()
 	{
 		String info = "";
