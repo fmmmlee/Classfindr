@@ -40,6 +40,7 @@ public class LocalDBTools {
 	
 	public static void create_course_table(String table_name, Connection conn) throws SQLException
 	{
+		//TODO: Change to be identical to the names seen on AWS
 		String table_query_str = "CREATE TABLE " + table_name + "("
 				+ "crndate int,"
 				+ "crn int,"

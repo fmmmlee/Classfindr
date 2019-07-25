@@ -49,11 +49,12 @@ public class Initializer {
 		/* initializing class instances */
 		ParseDoc parse = new ParseDoc(share);
 		UploadToAWS upload = new UploadToAWS(share);
+		AccessLocalDB localDB = new AccessLocalDB(share);
 		CourseConverter converter = new CourseConverter(share);
 		
 		/* spinning threads */
 		CompletableFuture<Void> parse_thread = CompletableFuture.runAsync(parse);
-		CompletableFuture<Void> upload_thread = CompletableFuture.runAsync(upload);
+		CompletableFuture<Void> upload_thread = (share.database_type == AWS ? CompletableFuture.runAsync(upload) : CompletableFuture.runAsync(localDB));
 		CompletableFuture<Void> converter_thread = CompletableFuture.runAsync(converter);
 		
 		/* waiting for output */

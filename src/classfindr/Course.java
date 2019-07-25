@@ -20,6 +20,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
 //TODO: Make crndate get added to the hash table during parse
+//TODO: Set up batch insert/update - see H2 documentation
 public class Course{
 	
 	/** holds all the information about a course */

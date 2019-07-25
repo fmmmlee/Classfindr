@@ -20,7 +20,10 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 public class CourseConverter implements Runnable {
 	
 	int mode; 			//1 = insert, 2 = update
-	int destination; 	//1 = local, 2 = AWS
+	int destination; 	//0 = local, 1 = AWS
+	
+	static final int LOCAL = 0;
+	static final int AWS = 1;
 	
 	BlockingQueue<Course> input; //input to this thread
 	
@@ -39,6 +42,8 @@ public class CourseConverter implements Runnable {
 	/* shared metric - this thread contributes conversion time */
 	Metric thisMetric;
 	
+	String table_name;
+	
 	/* constructor */
 	CourseConverter(ThreadShare shared)
 	{
@@ -52,6 +57,8 @@ public class CourseConverter implements Runnable {
 		still_converting = shared.converting;
 		mode = shared.mode;
 		thisMetric = shared.metric;
+		table_name = shared.table;
+		
 	}
 	
 	/**
@@ -63,43 +70,83 @@ public class CourseConverter implements Runnable {
 	public void run()
 	{
 		long start_time = System.nanoTime();
-		int k = 0;
+		int uploads = 0;
 		Notifications.thread_spun("converter");
-		while(!parse_finished.get() || input.peek() != null) {
+		if(destination == LOCAL)
+		{
+			uploads = localQueueHandler(uploads); //shouldn't need the "uploads = " part but I left it in just in case, will test remove later
+		}
+		else
+		{
+			uploads = AWS_queue(uploads);
+		}
+		
+		thisMetric.set_conversion_time(System.nanoTime()-start_time);
+		Notifications.task_finished("all conversions");
+		still_converting.set(false);
+		thisMetric.set_total_uploads(uploads);
+		return;
+	}
+	
+	
+	/* Converting to AWS format */
+	private int AWS_queue(int uploads)
+	{
+		while(!parse_finished.get() || input.peek() != null)
+		{
 			while(input.peek() != null)
 			{
 				try {
 					switch(mode)
 					{
 					case 1 :
-						k++;
+						uploads++;
 						put_output.put(input.poll().generateItemPush());
 						break;
 					case 2 :
 						Course temp_course = input.poll();
 						key_output.put(temp_course.itemKey());
 						update_output.put(temp_course.generateItemUpdate());
-						k++;
+						uploads++;
 						break;
-					case 3 :
-						
-					case 4 :
-						
 					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
 		}
-		
-		thisMetric.set_conversion_time(System.nanoTime()-start_time);
-		Notifications.task_finished("all conversions");
-		still_converting.set(false);
-		thisMetric.set_total_uploads(k);
-		return;
+		return uploads;
 	}
 	
-	
+	/* Converting to strings for local DB */
+	private int localQueueHandler(int uploads)
+	{
+		while(!parse_finished.get() || input.peek() != null)
+		{
+			while(input.peek() != null)
+			{
+				try
+				{
+					switch(mode)
+					{
+					case 1 :
+						uploads++;
+						local_output.put(input.poll().generateLocalInsert(table_name));
+						break;
+					case 2 :
+						Course temp_course = input.poll();
+						key_output.put(temp_course.itemKey());
+						local_output.put(temp_course.generateLocalUpdate(table_name));
+						uploads++;
+						break;
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return uploads;
+	}
 	
 	
 }
