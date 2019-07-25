@@ -24,6 +24,8 @@
 - <a href="https://jsoup.org/">Jsoup</a>
 
 ## Current ToDo
+- Clean up overall application structure and file organization
+- Complete documentation and in-code comments
 - Add writing to a local database instead of DynamoDB
 - Write functions to read from DynamoDB/local database
 - Add config file to direct whether to write to local or AWS
