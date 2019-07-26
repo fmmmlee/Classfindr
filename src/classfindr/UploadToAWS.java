@@ -50,6 +50,7 @@ import org.jsoup.nodes.Document;
 @SuppressWarnings("unused")
 public class UploadToAWS implements Runnable{
 
+	static final String HEADER = "Amazon DynamoDB Upload Initiated";
 	static final int SIZE = 60;
 	
 	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_input;
@@ -212,7 +213,7 @@ public class UploadToAWS implements Runnable{
                 job_progress++;
                 this_second++;
                 if(job_size.peek() != null){
-                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, currentTerm);
+                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, HEADER, currentTerm);
                 	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {
@@ -234,7 +235,7 @@ public class UploadToAWS implements Runnable{
                 job_progress++;
                 this_second++;
                 if(job_size.peek() != null){
-                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, currentTerm);
+                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, HEADER, currentTerm);
                 	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {

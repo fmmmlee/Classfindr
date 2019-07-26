@@ -28,6 +28,9 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
  */
 public class ThreadShare {
 	
+	static final int AWS = 1;
+	static final int EMBEDDED = 0;
+	
 	/** output of CallServer/input of ParseDoc */
 	BlockingQueue<Document> unparsed = new LinkedBlockingQueue<Document>();
 	
@@ -94,17 +97,24 @@ public class ThreadShare {
 		
 		
 		/* initializing queues depending on specified mode */
-		switch(mode)
+		switch(database_type)
 		{
-		case 1:
-			put_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
+		case EMBEDDED :
+			local_queue = new LinkedBlockingQueue<String>();
 			break;
-		case 2:
-			key_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
-			update_queue = new LinkedBlockingQueue<HashMap<String, AttributeValueUpdate>>();
+		case AWS :
+			switch(mode)
+			{
+			case 1:
+				put_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
+				break;
+			case 2:
+				key_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
+				update_queue = new LinkedBlockingQueue<HashMap<String, AttributeValueUpdate>>();
+				break;
+			}
 			break;
-		}
-		
+		}		
 	}
 	
 }

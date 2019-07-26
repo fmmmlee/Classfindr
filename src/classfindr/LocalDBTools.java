@@ -14,7 +14,7 @@ import java.sql.Statement;
 public class LocalDBTools {
 
 	/**
-	 * 
+	 * @deprecated doesn't function properly
 	 * @param table_name the name of the table to check existence
 	 * @param conn the connection to check for a table with the name provided
 	 * @return a boolean: TRUE if a table with the name provided exists at the connection specified, FALSE otherwise
@@ -32,37 +32,39 @@ public class LocalDBTools {
 	
 	
 	/**
-	 * 
+	 * Creates a table if it does not already exist
 	 * @param table_name the name of the table to create
 	 * @param conn the database connection over which to create a table
 	 * @throws SQLException
 	 */
 	
-	public static void create_course_table(String table_name, Connection conn) throws SQLException
+	public static void createTable(String table_name, Connection conn) throws SQLException
 	{
 		//TODO: Change to be identical to the names seen on AWS
-		String table_query_str = "CREATE TABLE " + table_name + "("
-				+ "crndate int,"
-				+ "crn int,"
-				+ "available int,"
-				+ "capacity int,"
-				+ "enrolled int,"
-				+ "description varchar(500),"
-				+ "start_date char(5),"
+		String table_query_str = "CREATE TABLE IF NOT EXISTS " + table_name + "("
 				+ "end_date char(5),"
-				+ "instructor varchar(100),"
-				+ "number int,"
+				+ "crndate varchar(15),"
+				+ "year char(4),"
 				+ "subject varchar(10),"
+				+ "extra_charges varchar(500),"
+				+ "available varchar(5),"
+				+ "end_time varchar(500),"
+				+ "description varchar(2000),"
+				+ "building varchar(500),"
+				+ "capacity varchar(5),"
+				+ "meet_times varchar(500),"
+				+ "number varchar(10),"
+				+ "start_time varchar(500),"
+				+ "instructor varchar(500),"
+				+ "credits varchar(10),"
 				+ "term varchar(10),"
-				+ "year int,"
-				+ "building varchar(10),"
-				+ "meet_times varchar(10),"
-				+ "credits int,"
-				+ "prereqs varchar(500),"
-				+ "start_time int,"
-				+ "end_time int,"
-				+ "restr varchar(100)," 
-				+ "extr_chgs varchar(100),"
+				+ "crn varchar(15),"
+				+ "attributes varchar(500),"
+				+ "enrolled varchar(5),"
+				+ "start_date char(5),"
+				+ "prerequisites varchar(1000),"
+				+ "restrictions varchar(1000)," 
+				+ "waitlist varchar(5),"
 				+ "PRIMARY KEY(crndate)"
 				+ ");";
 		

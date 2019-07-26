@@ -183,7 +183,8 @@ public class ParseDoc implements Runnable{
         	
         	
         	//CRN
-        	temp.courseInfo.put("crn", columns.select("input").attr("value") + " " + year_term);
+        	temp.courseInfo.put("crndate", year_term + columns.select("input").attr("value"));
+        	temp.courseInfo.put("crn", columns.select("input").attr("value"));
         	temp.courseInfo.put("year", year);
     		temp.courseInfo.put("term", term);
         	//clean up empty columns and skip row if empty
@@ -266,8 +267,8 @@ public class ParseDoc implements Runnable{
             		timesLine(temp, columns);
             	//for continuations of prereqs or special descriptions
             	} else {
-            		String curDes = temp.courseInfo.get("description");
-            		temp.courseInfo.put("description", curDes == null ? checker : curDes + checker);
+            		/*String curDes = temp.courseInfo.get("description");
+            		temp.courseInfo.put("description", curDes == null ? checker : curDes + checker);*/
             	}
             	i++;
             }
@@ -339,9 +340,9 @@ public class ParseDoc implements Runnable{
     	if(probSubj.length() > 4)
     	{
     		input.courseInfo.put("subject", probSubj.substring(0, 4));
-    		String curDes = input.courseInfo.get("description");
-    		String note = "Note: The class number of this class also has \'" + probSubj.substring(4, probSubj.length()) + "\' appended to it";
-    		input.courseInfo.put("description", curDes == null ? note : curDes + " |" + note);
+    		/*String curDes = input.courseInfo.get("description");
+    		String note = "Note: The class number of this class also has " + probSubj.substring(4, probSubj.length()) + " appended to it";
+    		input.courseInfo.put("description", curDes == null ? note : curDes + " |" + note);*/
     	} else {
     		input.courseInfo.put("subject", probSubj);
     	}
@@ -359,9 +360,9 @@ public class ParseDoc implements Runnable{
     	String placeholder = columns.get(6).text();
     	if(placeholder.contains("TBA"))
     	{
-    		String curDes = input.courseInfo.get("description");
+    		/*String curDes = input.courseInfo.get("description");
     		String note = "Note: Dates for this class have not yet been decided";
-    		input.courseInfo.put("description", curDes == null ? note : curDes + " |" + note);
+    		input.courseInfo.put("description", curDes == null ? note : curDes + " |" + note);*/
     		return;
     	}
     	

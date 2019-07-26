@@ -127,17 +127,14 @@ public class CourseConverter implements Runnable {
 			{
 				try
 				{
+					uploads++;
 					switch(mode)
 					{
 					case 1 :
-						uploads++;
 						local_output.put(input.poll().generateLocalInsert(table_name));
 						break;
 					case 2 :
-						Course temp_course = input.poll();
-						key_output.put(temp_course.itemKey());
-						local_output.put(temp_course.generateLocalUpdate(table_name));
-						uploads++;
+						local_output.put(input.poll().generateLocalUpdate(table_name));
 						break;
 					}
 				} catch (InterruptedException e) {

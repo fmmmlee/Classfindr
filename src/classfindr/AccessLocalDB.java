@@ -10,53 +10,54 @@ package classfindr;
  * 
  */
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.h2.jdbcx.JdbcDataSource;
 
 public class AccessLocalDB implements Runnable
 {
 	/* Progress Bar */
-	static final int pbar_size = 60;	//number of ticks in progress bar
-	static boolean begun_bar;			//says whether progress bar has started printing or not
+	final int pbar_size = 60;												//number of ticks in progress bar
+	final String pbar_header = "Database Statement Execution Initiated";	//header to print over the progress bar
+	boolean begun_bar;														//says whether progress bar has started printing or not
 	
 	/* Database */
-	static final String driver = "org.h2.Driver";		//database driver
-	static final String DB_URL = "jdbc:h2:~/test";		//database connection URL
-	static final String DB_USER = "sa";					//username for database
-	static final String DB_PASS = "";					//password for database
-	static Connection db_conn;							//connection to the database
-	static String table;								//table to access/create/modify
+	static final String DB_URL = "jdbc:h2:./data/classfindr";	//database connection URL
+	static final String DB_USER = "sa";							//username for database
+	static final String DB_PASS = "";							//password for database
+	final String table;											//table to access/create/modify
+	Connection db_conn;											//connection to the database		*
 	
 	/* Queue Processing */
-	BlockingQueue<String> incoming_queries;		//queue of string queries
-	static BlockingQueue<Integer> job_size;		//queue that holds individual job sizes
-	static int job_progress;					//tracks progress of current database task
+	BlockingQueue<String> incomingQueries;		//queue of string queries
+	BlockingQueue<Integer> jobSizes;			//queue that holds individual job sizes
+	int jobProgress;							//tracks progress of current database task
 	String[] terms; 							//school terms being worked with
-	String current_term;						//term being currently processed
+	String currentTerm;							//term being currently processed
 	
 	/* Thread Communication */
 	AtomicBoolean finished_converting;	//indicates if converter thread has finished
 	
 	/* Metrics */
-	Metric thisMetric;			//shared metric object, used to record upload stats
-	long start_time; 			//records start time
-	static double this_second; 	//tracking statements processed in the current second
-	double per_second; 			//average statements per second
-	List<Double> second_list; 	//list of statements processed for each second
+	Metric thisMetric;				//shared metric object, used to record upload stats
+	long uploadStartTime; 			//records start time
+	long startOfSec;				//records beginning of current second being measured
+	double handledCurSec; 			//tracking statements processed in the current second
+	double perSecond; 				//average statements per second
+	List<Double> allSecondStats;	//list of statements processed for each second
 	
 		
 	/* constructor */
 	public AccessLocalDB(ThreadShare shared)
 	{
-		incoming_queries = shared.local_queue;
+		incomingQueries = shared.local_queue;
 		terms = shared.terms;
 		table = shared.table;
-		job_size = shared.upload_sizes;
+		jobSizes = shared.upload_sizes;
 		finished_converting = shared.converting;
 		thisMetric = shared.metric;
 	}
@@ -66,12 +67,17 @@ public class AccessLocalDB implements Runnable
 	{
 		Notifications.thread_spun("upload");
 		try {
-			db_conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+			JdbcDataSource db = new JdbcDataSource();
+			db.setURL(DB_URL);
+			db.setUser(DB_USER);
+			db.setPassword(DB_PASS);
+			db_conn = db.getConnection();
 			handle_queue();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return;	
 		}
+		return;
 	}
 	
 	
@@ -84,50 +90,35 @@ public class AccessLocalDB implements Runnable
 	private void handle_queue() throws SQLException
 	{
 		int j = 0;	//index in array of terms to set current_term to
-		begun_bar = true;
-		long start_second = 0;
-		this_second = 0.0;
-		per_second = 0.0;
-		job_progress = 0;
-		second_list = new ArrayList<Double>();
-		start_time = System.nanoTime();
-		current_term = terms[j];
-		
-		/* if destination table does not exist, create it */
-		if(!LocalDBTools.table_exist(table, db_conn))
-		{
-			LocalDBTools.create_course_table(table, db_conn);
-		}
-		
-		/* loop to handle queue, returns when finished */
-		while(true) {	
-			////////////////METRICS/////////////////
-			if(start_second == 0)
-				start_second = System.nanoTime();
-			else if(System.nanoTime() - start_second > 1000000000)
-			{
-				second_list.add(this_second);
-				this_second = 0.0;
-				start_second = System.nanoTime();
-			}
-			////////////////////////////////////////
-			
-			if(newTermHandler(j) == 1)
-				return;	
+		begun_bar = false;
+		handledCurSec = 0.0;
+		perSecond = 0.0;
+		jobProgress = 0;
+		allSecondStats = new ArrayList<Double>();
+		uploadStartTime = System.nanoTime();
+		currentTerm = terms[j];
 
-			while(incoming_queries.peek() != null)
-			{
-				if(newTermHandler(j) == 1)
-					return;				
-				
-				if(System.nanoTime() - start_second > 1000000000)
-				{
-					second_list.add(this_second);
-					this_second = 0;
-					start_second = System.nanoTime();
-				}
-				
+		/* if destination table does not exist, create it */
+		LocalDBTools.createTable(table, db_conn);
+		
+		/* setting the start time of the first second of uploads */
+		startOfSec = System.nanoTime();
+
+		/* loop to handle queue, returns when finished */
+		while(true) {
+			perSecondTracker();
+			j = newTermHandler(j);
+			if(isLastTerm(j))
+				return;
+			
+			//TODO: Check for null head of queue bug in the AWS corollary to this section of code
+			while(incomingQueries.peek() != null && jobSizes.peek() != null)
+			{	
+				perSecondTracker();
 				exec_statement();
+				j = newTermHandler(j);
+				if(isLastTerm(j))
+					return;
 			}
 		}
 	}
@@ -139,11 +130,11 @@ public class AccessLocalDB implements Runnable
 	{
 		Statement newstatement;
 		newstatement = db_conn.createStatement();
-		newstatement.execute(incoming_queries.peek());
-		Waiting_Indicators.progress_bar(pbar_size, job_progress, job_size.peek(), begun_bar, current_term);
-		job_progress++;
-		this_second++;
-		
+		newstatement.execute(incomingQueries.poll());
+		jobProgress++;
+		Waiting_Indicators.progress_bar(pbar_size, jobProgress, jobSizes.peek(), !begun_bar, pbar_header, currentTerm);
+		begun_bar = true;
+		handledCurSec++;
 	}
 	
 	
@@ -158,13 +149,13 @@ public class AccessLocalDB implements Runnable
 	{
 		if(termNum >= terms.length)
 		{
-			thisMetric.add_upload_time(System.nanoTime()-start_time);
-			for(double second : second_list)
+			thisMetric.add_upload_time(System.nanoTime()-uploadStartTime);
+			for(double second : allSecondStats)
 			{
-				per_second += second;
+				perSecond += second;
 			}
-			per_second = per_second/second_list.size();
-			thisMetric.add_upload_rate(per_second);
+			perSecond = perSecond/allSecondStats.size();
+			thisMetric.add_upload_rate(perSecond);
 			return true;
 		}
 		return false;
@@ -172,22 +163,34 @@ public class AccessLocalDB implements Runnable
 	
 	/*
 	 * 
-	 * Takes care of variables if finished processing courses in the current term. If it is the last term, returns 1, otherwise 0.
+	 * Takes care of variables if finished processing courses in the current term. If it is the last term in the current job, returns 1, otherwise 0.
 	 * 
 	 */
 	private int newTermHandler(int j)
 	{
-		if(job_size.peek() != null && job_size.peek() == job_progress)
+		if(jobSizes.peek() != null && jobSizes.peek() == jobProgress)
 		{
-			job_size.poll(); //removing the size of the completed job from the queue
-			job_progress = 0;
+			jobSizes.poll(); //removing the size of the completed job from the queue
+			jobProgress = 0;
 			j++;
-			
 			if(isLastTerm(j))
-				return 1;
-			
-			current_term = terms[j];
+				return j;	
+			currentTerm = terms[j];
 		}
-		return 0;
+		return j;
+	}
+	
+	/*
+	 * helper function for tracking statements processed per second
+	 * TODO: Maybe make this a generic function that can record events per second
+	 */
+	private void perSecondTracker()
+	{
+		if(System.nanoTime() - startOfSec > 1000000000)
+		{
+			allSecondStats.add(handledCurSec);
+			handledCurSec = 0;
+			startOfSec = System.nanoTime();
+		}
 	}
 }

@@ -19,12 +19,14 @@ final class Prefs
 	String table;
 	String[] terms = null;
 	int mode;
+	int database;
 }
 
+//TODO: If one thread throws an exeption, cease execution on the others and give an error message and exit properly
 public class Initializer {
 	
 	/* modes for uploading */
-	static final int PUT = 1;
+	static final int INSERT = 1;
 	static final int UPDATE = 2;
 	
 	/* database destinations */
@@ -35,11 +37,11 @@ public class Initializer {
 	{
 		Prefs preferences = new Prefs();
 		
-		/* accepting user input */ //TODO: accept user input for destination and upload type as well, then pare down constructor for ThreadShare
+		/* accepting user input */
 		Notifications.setprefs(preferences);
-			
+		
 		/* initializing shared data object */
-		final ThreadShare share = new ThreadShare(AWS, UPDATE, preferences.terms, preferences.table); //TODO: Have ThreadShare just accept a Prefs object
+		final ThreadShare share = new ThreadShare(preferences.database, preferences.mode, preferences.terms, preferences.table); //TODO: Have ThreadShare just accept a Prefs object
 		
 		/* calling WWU servers on new thread */
 		ServerCalls call = new ServerCalls(share);
@@ -54,7 +56,7 @@ public class Initializer {
 		
 		/* spinning threads */
 		CompletableFuture<Void> parse_thread = CompletableFuture.runAsync(parse);
-		CompletableFuture<Void> upload_thread = (share.database_type == AWS ? CompletableFuture.runAsync(upload) : CompletableFuture.runAsync(localDB));
+		CompletableFuture<Void> upload_thread = (preferences.database == AWS ? CompletableFuture.runAsync(upload) : CompletableFuture.runAsync(localDB));
 		CompletableFuture<Void> converter_thread = CompletableFuture.runAsync(converter);
 		
 		/* waiting for output */

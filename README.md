@@ -1,8 +1,8 @@
-# Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr) [![Current Version](https://img.shields.io/badge/version-0.3.1-blue.svg?style=flat)](https://github.com/fmmmlee/Classfindr/blob/master/pom.xml)
+# Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr) [![Current Version](https://img.shields.io/badge/version-0.3.2-blue.svg?style=flat)](https://github.com/fmmmlee/Classfindr/blob/master/pom.xml)
 
 **Goal:** a service that scrapes Western Washington University's classfinder and generates a mirror database with more diverse and accessible tools.
 
-**Current status:** No tools are available for an end user, but the program is functional for scraping data and uploading to AWS. Update focus is currently on implementing writing to a local database rather than AWS in order to avoid the bottleneck from AWS traffic tier limits.
+**Current status:** No tools are available for an end user, but the program is functional for scraping data and uploading to AWS. Embedded database integration with H2 is partially functional, but has no tools for accessing the data yet. Local writing also contains bugs of varying degrees of severity.
 
 ## Building:
 
@@ -22,6 +22,7 @@
 - <a href="https://maven.apache.org/">Maven</a>
 - <a href="https://github.com/google/gson">Gson</a>
 - <a href="https://jsoup.org/">Jsoup</a>
+- <a href="https://www.h2database.com">H2 Database</a>
 
 ## Current ToDo
 - Clean up overall application structure and file organization

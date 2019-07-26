@@ -19,7 +19,6 @@ import com.amazonaws.services.dynamodbv2.model.AttributeAction;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
-//TODO: Make crndate get added to the hash table during parse
 //TODO: Set up batch insert/update - see H2 documentation
 public class Course{
 	
@@ -47,19 +46,17 @@ public class Course{
 	 */
 	public String generateLocalInsert(String table_name)
 	{
-		String columns = "(crndate, ";
-		String values = "(" + termNumFormat() + ", ";
-		
+		String columns = "(";
+		String values = "VALUES(";
 		/* adding keys and values to column and value portions of query respectively */
 		for(Entry<String, String> course : courseInfo.entrySet())
 		{
 			columns += course.getKey() + ",";
-			values += course.getValue() + ",";
+			values += "\'" + course.getValue().replaceAll("[']", "") + "\'" + ",";
 		}
 		
 		columns = columns.substring(0, columns.length()-1) + ")";		//replacing trailing ',' with a close parenthesis
 		values = values.substring(0, values.length()-1) + ")";			//replacing trailing ',' with a close parenthesis
-		
 		
 		return "INSERT INTO " + table_name + " " + columns + " " + values + ";";
 	}
@@ -74,37 +71,15 @@ public class Course{
 	public String generateLocalUpdate(String table_name)
 	{
 		String statement = "UPDATE " + table_name + " SET ";
-		statement += "crndate = " + termNumFormat();
 		for(Entry<String, String> course : courseInfo.entrySet())
 		{
-			statement += ", " + course.getKey() + " = " + course.getValue();
+			statement += course.getKey() + " = " + "\'" + course.getValue().replaceAll("[']", "\'\'") + "\'" + ", ";
 		}
-		statement += " WHERE crndate = " + termNumFormat() + ";";
+		statement = statement.substring(0, statement.length()-2); //removing trailing comma and space
+		statement += " WHERE crndate = " + courseInfo.get("crndate") + ";";
 		return statement;
 	}
-	
-	/* generates a number to represent the term of the course object */
-	private String termNumFormat()
-	{
-		String termNumber = "";
-		termNumber += courseInfo.get("year");
-		String term = courseInfo.get("term");
-		switch(term)
-		{
-			case "Winter" :
-				termNumber += "01";
-			case "Spring" :
-				termNumber += "02";
-			case "Summer" :
-				termNumber += "03";
-			case "Fall" :
-				termNumber += "04";
-		}
-		return termNumber;
-	}
-	
-	
-	
+		
 	
 	
 	

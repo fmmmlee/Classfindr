@@ -28,8 +28,9 @@ public class Notifications {
 		Scanner input = new Scanner(System.in);
 		System.out.println(SYSMSG + "Data is available from Fall 2003 to mid-2020.");
 		System.out.println(SYSMSG + "Modes: INSERT or UPDATE");
-		System.out.println(SYSMSG + "Example Command: 2012 Fall to 2013 Summer UPDATE courses");
-		System.out.print(SYSMSG + "Input format: [year term] to [year term] [MODE] [table name]\n" + INPUT + " ");
+		System.out.println(SYSMSG + "Databases: AWS or EMBEDDED");
+		System.out.println(SYSMSG + "Example Command: 2012 Fall to 2013 Summer UPDATE AWS courses");
+		System.out.print(SYSMSG + "Input format: [YEAR] [TERM] to [YEAR] [TERM] [MODE] [DATABASE] [TABLE]\n" + INPUT + " ");
 		String[] prefs = input.nextLine().split(" ");
 		List<String> temp_terms = new ArrayList<String>();
 		int current_year = 100*(Integer.parseInt(prefs[0]));
@@ -72,19 +73,22 @@ public class Notifications {
 		case "UPDATE" :
 			to_be_set.mode = 2;
 			break;
-		case "PUT" :
+		case "INSERT" :
 			to_be_set.mode = 1;
 			break;
-		case "summer" :
-			to_be_set.mode = 3;
+		}
+		
+		switch(prefs[6])
+		{
+		case "AWS" :
+			to_be_set.database = 1;
 			break;
-		case "fall" :
-			to_be_set.mode = 4;
+		case "EMBEDDED" :
+			to_be_set.database = 0;
 			break;
 		}
-
 		
-		to_be_set.table = prefs[6];
+		to_be_set.table = prefs[7];
 		
 		while(current_year != year_end)
 		{

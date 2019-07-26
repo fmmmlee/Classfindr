@@ -40,10 +40,10 @@ public class Waiting_Indicators {
 	/* simple console progress bar */
 	//TODO: in the mid-600s / 2576 there was a hop at the end of the line; I assume it's an idiosyncrasy of the casts between double and int here
 	//also maybe change the header to be a parameter
-	public static void progress_bar(int length, int progress, int goal, boolean print_header, String label)
+	public static void progress_bar(int length, int progress, int goal, boolean print_header, String header, String label)
 	{
 		if(print_header) {
-			System.out.println(STATUS + " Amazon DynamoDB Upload Initiated");
+			System.out.println(STATUS + " " + header);
     	}
 		
 		if(progress<goal)
