@@ -26,7 +26,7 @@
 ## Current ToDo
 - Complete documentation and in-code comments
 - Write functions to read from DynamoDB/local database
-- Overhaul document parser; it's wildly overcomplicated for what it needs to do
+- Overhaul document parser; it's convoluted and fails to account for some of the nastier formatting idiosyncrasies of WWU's Classfinder
 - Implement BatchWriteItem
 - Add constraints for requests to WWU servers in a YAML or JSON
 - write script to run a build of this every so often to keep the database updated
