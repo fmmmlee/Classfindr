@@ -1,4 +1,4 @@
-package classfindr;
+package classfindr.ExecutedThreads;
 /*
  * 
  * Matthew Lee
@@ -16,14 +16,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
-//TODO: Add mode check (preferably on thread spin, not run) and putting items into localDB queues
+import classfindr.ConsoleInterface.Notifications;
+import classfindr.Utility.Course;
+import classfindr.Utility.Metric;
+import classfindr.Utility.ThreadShare;
+
+import static classfindr.Utility.Constants.*;
+
 public class CourseConverter implements Runnable {
 	
-	int mode; 			//1 = insert, 2 = update
-	int destination; 	//0 = local, 1 = AWS
-	
-	static final int LOCAL = 0;
-	static final int AWS = 1;
+	int mode; 		
+	int destination;
 	
 	BlockingQueue<Course> input; //input to this thread
 	
@@ -45,19 +48,19 @@ public class CourseConverter implements Runnable {
 	String table_name;
 	
 	/* constructor */
-	CourseConverter(ThreadShare shared)
+	public CourseConverter(ThreadShare shared)
 	{
-		local_output = shared.local_queue;
-		destination = shared.database_type;
+		local_output = shared.get_localQueue();
+		destination = shared.preferences.database;
 		put_output = shared.put_queue;
 		key_output = shared.key_queue;
 		update_output = shared.update_queue;
 		input = shared.course_queue;
 		parse_finished = shared.parse_finished;
 		still_converting = shared.converting;
-		mode = shared.mode;
+		mode = shared.preferences.mode;
 		thisMetric = shared.metric;
-		table_name = shared.table;
+		table_name = shared.preferences.table;
 		
 	}
 	

@@ -1,4 +1,4 @@
-package classfindr;
+package classfindr.ExecutedThreads;
 /*
  * 
  * Matthew Lee
@@ -29,6 +29,11 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
+
+import classfindr.ConsoleInterface.Notifications;
+import classfindr.Utility.Metric;
+import classfindr.Utility.ThreadShare;
+import classfindr.Utility.Waiting_Indicators;
 
 import java.lang.Math.*;
 import java.io.File;
@@ -79,19 +84,17 @@ public class UploadToAWS implements Runnable{
 	//progress bar currently takes in a boolean to decide whether to print a message or not
 	//it's hacky, unnecessary and I need to change it at some point
 	
-	//TODO all the messages from Amazon's DB examples need to be changed
-	
 	//NO BATCH SUPPORT IN THIS VERSION
 	public UploadToAWS(ThreadShare shared)
 	{
-		upload_mode = shared.mode;
+		upload_mode = shared.preferences.mode;
 		batch_mode = shared.batch_mode;
 		update_input = shared.update_queue;
 		key_input = shared.key_queue;
 		put_input = shared.put_queue;
-		terms = shared.terms;
-		table = shared.table;
-		job_size = shared.upload_sizes;
+		terms = shared.preferences.terms;
+		table = shared.preferences.table;
+		job_size = shared.getUploadSizes();
 		finished_converting = shared.converting;
 		thisMetric = shared.metric;
 	}
@@ -217,8 +220,7 @@ public class UploadToAWS implements Runnable{
                 	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {
-                System.err.format("Error: The table \"%s\" can't be found.\n", tableName);
-                System.err.println("Be sure that it exists and that you've typed its name correctly!");
+            	System.err.format("Error: Table \"%s\" not found in the AWS account configured.\n", tableName);
                 System.exit(1);
             } catch (AmazonServiceException e) {
                 System.err.println(e.getMessage());
@@ -239,8 +241,7 @@ public class UploadToAWS implements Runnable{
                 	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {
-                System.err.format("Error: The table \"%s\" can't be found.\n", tableName);
-                System.err.println("Be sure that it exists and that you've typed its name correctly!");
+                System.err.format("Error: Table \"%s\" not found in the AWS account configured.\n", tableName);
                 System.exit(1);
             } catch (AmazonServiceException e) {
                 System.err.println(e.getMessage());
@@ -268,6 +269,6 @@ public class UploadToAWS implements Runnable{
             System.err.println(e.getErrorMessage());
             System.exit(1);
         }
-        System.out.println("successfully created table with name " + tableName);
+        System.out.println("Successfully created table with name " + tableName);
     }
 }

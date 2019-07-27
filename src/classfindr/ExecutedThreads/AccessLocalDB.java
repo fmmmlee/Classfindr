@@ -1,4 +1,4 @@
-package classfindr;
+package classfindr.ExecutedThreads;
 
 /*
  * 
@@ -17,6 +17,12 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.h2.jdbcx.JdbcDataSource;
+
+import classfindr.ConsoleInterface.Notifications;
+import classfindr.Utility.LocalDBTools;
+import classfindr.Utility.Metric;
+import classfindr.Utility.ThreadShare;
+import classfindr.Utility.Waiting_Indicators;
 
 public class AccessLocalDB implements Runnable
 {
@@ -54,10 +60,10 @@ public class AccessLocalDB implements Runnable
 	/* constructor */
 	public AccessLocalDB(ThreadShare shared)
 	{
-		incomingQueries = shared.local_queue;
-		terms = shared.terms;
-		table = shared.table;
-		jobSizes = shared.upload_sizes;
+		incomingQueries = shared.get_localQueue();
+		terms = shared.preferences.terms;
+		table = shared.preferences.table;
+		jobSizes = shared.getUploadSizes();
 		finished_converting = shared.converting;
 		thisMetric = shared.metric;
 	}

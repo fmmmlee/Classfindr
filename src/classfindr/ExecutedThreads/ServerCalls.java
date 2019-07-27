@@ -1,4 +1,4 @@
-package classfindr;
+package classfindr.ExecutedThreads;
 /*
  * 
  * Matthew Lee
@@ -16,6 +16,10 @@ import org.apache.commons.io.FileUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
+import classfindr.ConsoleInterface.Notifications;
+import classfindr.Utility.Metric;
+import classfindr.Utility.ThreadShare;
 
 
 
@@ -46,10 +50,10 @@ public class ServerCalls implements Runnable{
      * 
      * @param	shared	an object of the ThreadShare class that holds information used by this class as well as other classes during concurrent execution.
      */
-    ServerCalls(ThreadShare shared)
+    public ServerCalls(ThreadShare shared)
     {
     	finished = shared.calls_finished;
-    	terms = shared.terms;
+    	terms = shared.preferences.terms;
     	info = shared.metric;
     	parsed_docs = shared.unparsed;
     }

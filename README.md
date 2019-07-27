@@ -1,4 +1,4 @@
-# Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr) [![Current Version](https://img.shields.io/badge/version-0.3.2-blue.svg?style=flat)](https://github.com/fmmmlee/Classfindr/blob/master/pom.xml)
+# Classfindr [![Build Status](https://travis-ci.org/fmmmlee/Classfindr.svg?branch=master)](https://travis-ci.org/fmmmlee/Classfindr) [![Current Version](https://img.shields.io/badge/version-0.3.3-blue.svg?style=flat)](https://github.com/fmmmlee/Classfindr/blob/master/pom.xml)
 
 **Goal:** a service that scrapes Western Washington University's classfinder and generates a mirror database with more diverse and accessible tools.
 
@@ -20,7 +20,6 @@
 
 ### Built With
 - <a href="https://maven.apache.org/">Maven</a>
-- <a href="https://github.com/google/gson">Gson</a>
 - <a href="https://jsoup.org/">Jsoup</a>
 - <a href="https://www.h2database.com">H2 DB</a>
 

@@ -1,8 +1,8 @@
-package classfindr;
+package classfindr.Utility;
 /*
  * 
  * Matthew Lee
- * Spring 2019
+ * Summer 2019
  * Classfindr
  * Object to store clocks and other information
  * 
@@ -27,13 +27,17 @@ public class Metric {
 	double uploads_per_second;
 	int total_uploads;
 	
-	String table;
 	
+	String table;
+	String uploadMode;
+	String databaseType;
 	 
 	/* constructor */
-	Metric(String[] terms_in, String table_in)
+	public Metric(Preferences preferences)
 	{
-		table = table_in;
+		table = preferences.table;
+		uploadMode = preferences.modeStr();
+		databaseType = preferences.dbStr();
 	}
 		
 	/*********setters*********/
@@ -81,7 +85,9 @@ public class Metric {
 		
 
 			logs.println("----------------------------------------------");
+			logs.println("Database: " + databaseType);
 			logs.println("Table: " + table);
+			logs.println("Table Operation Type: " + uploadMode);
 			//TODO: Term span here
 			logs.println("Total Server Call time: " + call_time);
 			logs.println("Parse Time: " + parse_time + " nsec");

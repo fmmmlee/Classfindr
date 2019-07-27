@@ -1,4 +1,4 @@
-package classfindr;
+package classfindr.Utility;
 /*
  * 
  * Matthew Lee
@@ -21,62 +21,52 @@ import org.jsoup.nodes.Document;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
+import static classfindr.Utility.Constants.*;
 /**
  *
  * Object shared between various different threads that holds variables and other objects used by them, often concurrently
  *
  */
 public class ThreadShare {
-	
-	static final int AWS = 1;
-	static final int EMBEDDED = 0;
-	
+		
 	/** output of CallServer/input of ParseDoc */
-	BlockingQueue<Document> unparsed = new LinkedBlockingQueue<Document>();
+	public BlockingQueue<Document> unparsed = new LinkedBlockingQueue<Document>();
 	
 	/** output of ParseDoc/input of CourseConverter */
-	BlockingQueue<Course> course_queue = new LinkedBlockingQueue<Course>();
+	public BlockingQueue<Course> course_queue = new LinkedBlockingQueue<Course>();
 	
 	/** queue for uploading to AWS in insert mode - output of CourseConvert/input of UploadToAWS */
-	BlockingQueue<HashMap<String, AttributeValue>> put_queue;
+	public BlockingQueue<HashMap<String, AttributeValue>> put_queue;
 	/**queue for keys when uploading to AWS in update mode - output of CourseConvert/input of UploadToAWS */
-	BlockingQueue<HashMap<String, AttributeValue>> key_queue;
+	public BlockingQueue<HashMap<String, AttributeValue>> key_queue;
 	/**queue for items when uploading to AWS in update mode - output of CourseConvert/input of UploadToAWS */
-	BlockingQueue<HashMap<String, AttributeValueUpdate>> update_queue;
+	public BlockingQueue<HashMap<String, AttributeValueUpdate>> update_queue;
 	
 	
 	/** queue for update statements for local DB - output of CourseConvert/input of AccessLocalDB */
-	BlockingQueue<String> local_queue;
+	private BlockingQueue<String> local_queue;
 	
 	
 	/** size of each upload job */
-	BlockingQueue<Integer> upload_sizes = new LinkedBlockingQueue<Integer>();
-	
-	/** indicates update or insert */
-	int mode;
-	
-	/** indicates type of destination database (local = 0, 1 = AWS) */
-	int database_type;
+	private BlockingQueue<Integer> uploadSizes = new LinkedBlockingQueue<Integer>();
 	
 	
 	/** tracks whether server call is complete */
-	AtomicBoolean calls_finished = new AtomicBoolean(false);
+	public AtomicBoolean calls_finished = new AtomicBoolean(false);
 	/** tracks whether html parsing is complete */
-	AtomicBoolean parse_finished = new AtomicBoolean(false);
+	public AtomicBoolean parse_finished = new AtomicBoolean(false);
 	/** tracks whether object conversion is complete */
-	AtomicBoolean converting = new AtomicBoolean(true);
+	public AtomicBoolean converting = new AtomicBoolean(true);
 	
 	
 	/** batch mode - not implemented yet */
-	AtomicBoolean batch_mode = new AtomicBoolean(false);
+	public AtomicBoolean batch_mode = new AtomicBoolean(false);
 	
-	/** array with all terms that will be uploaded */
-	String[] terms;
-	/** name of table in destination database */
-	String table;
 	/** object that holds execution stats and information */
-	Metric metric;
+	public Metric metric;
 
+	/** run preferences */
+	public Preferences preferences;
 	
 	/**
 	 * Constructor
@@ -85,25 +75,19 @@ public class ThreadShare {
 	 * @param terms_in array of strings showing all terms being processed (sets local variable terms)
 	 * @param table_in name of table in destination database (sets local variable table)
 	 */
-	public ThreadShare(int dest, int mode_in, String[] terms_in, String table_in)
+	public ThreadShare(Preferences preferences)
 	{
-		database_type = dest;
-		mode = mode_in;
-		terms = terms_in;
-		table = table_in;
-		metric = new Metric(terms_in, table_in);
-		
-		//TODO: Add additional switch/conditional based on database_type and initialize queues based on that
-		
+		this.preferences = preferences;
+		metric = new Metric(preferences);
 		
 		/* initializing queues depending on specified mode */
-		switch(database_type)
+		switch(preferences.database)
 		{
 		case EMBEDDED :
 			local_queue = new LinkedBlockingQueue<String>();
 			break;
 		case AWS :
-			switch(mode)
+			switch(preferences.mode)
 			{
 			case 1:
 				put_queue = new LinkedBlockingQueue<HashMap<String, AttributeValue>>();
@@ -115,6 +99,14 @@ public class ThreadShare {
 			}
 			break;
 		}		
+	}
+
+	public BlockingQueue<String> get_localQueue() {
+		return local_queue;
+	}
+
+	public BlockingQueue<Integer> getUploadSizes() {
+		return uploadSizes;
 	}
 	
 }

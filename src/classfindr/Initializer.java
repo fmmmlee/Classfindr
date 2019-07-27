@@ -1,8 +1,9 @@
 package classfindr;
+
 /*
  * 
  * Matthew Lee
- * Spring 2019
+ * Summer 2019
  * Classfindr
  * Spawns instances of threads and executes.
  * 
@@ -14,34 +15,30 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-final class Prefs
-{
-	String table;
-	String[] terms = null;
-	int mode;
-	int database;
-}
+import classfindr.ConsoleInterface.Interface;
+import classfindr.ConsoleInterface.Notifications;
+import classfindr.ExecutedThreads.AccessLocalDB;
+import classfindr.ExecutedThreads.CourseConverter;
+import classfindr.ExecutedThreads.ParseDoc;
+import classfindr.ExecutedThreads.ServerCalls;
+import classfindr.ExecutedThreads.UploadToAWS;
+import classfindr.Utility.Preferences;
+import classfindr.Utility.ThreadShare;
 
-//TODO: If one thread throws an exeption, cease execution on the others and give an error message and exit properly
+import static classfindr.Utility.Constants.*;
+
+//TODO: If one thread throws an exception, cease execution on the others and give an error message and exit properly
 public class Initializer {
-	
-	/* modes for uploading */
-	static final int INSERT = 1;
-	static final int UPDATE = 2;
-	
-	/* database destinations */
-	static final int LOCAL = 0;
-	static final int AWS = 1;
 	
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException
 	{
-		Prefs preferences = new Prefs();
+		Preferences preferences = new Preferences();
 		
 		/* accepting user input */
-		Notifications.setprefs(preferences);
+		Interface.setprefs(preferences);
 		
 		/* initializing shared data object */
-		final ThreadShare share = new ThreadShare(preferences.database, preferences.mode, preferences.terms, preferences.table); //TODO: Have ThreadShare just accept a Prefs object
+		final ThreadShare share = new ThreadShare(preferences);
 		
 		/* calling WWU servers on new thread */
 		ServerCalls call = new ServerCalls(share);

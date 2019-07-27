@@ -1,4 +1,4 @@
-package classfindr;
+package classfindr.ExecutedThreads;
 /*
  * 
  * Matthew Lee
@@ -8,15 +8,6 @@ package classfindr;
  * 
  */
 
-//TODO: Good error checking analysis throughout whole package
-
-
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -26,13 +17,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
+import classfindr.ConsoleInterface.Notifications;
+import classfindr.Utility.Course;
+import classfindr.Utility.Metric;
+import classfindr.Utility.ThreadShare;
 
 public class ParseDoc implements Runnable{
 
@@ -49,9 +37,9 @@ public class ParseDoc implements Runnable{
 	{
 		unparsed = shared.unparsed;
 		calls_finished = shared.calls_finished;
-		terms = shared.terms;
+		terms = shared.preferences.terms;
 		toBeReturned = shared.course_queue;
-		sizes = shared.upload_sizes;
+		sizes = shared.getUploadSizes();
 		finished_parsing = shared.parse_finished;
 		thisMetric = shared.metric;
 	}
@@ -59,7 +47,6 @@ public class ParseDoc implements Runnable{
 	public void run()
 	{
 		Notifications.thread_spun("parse");
-		//should just keep doing this for each term
 		int i = 0;
 		while(unparsed.peek() != null || !calls_finished.get()) {
 			if(unparsed.peek() != null)
@@ -93,59 +80,7 @@ public class ParseDoc implements Runnable{
 	//TODO: This parse is pretty inefficient; it doesn't really matter since I've multithreaded everything and AWS throttling is the rate-limiting step but try to increase 
 	//efficiency at some point
     public void parseDocument(Document unsorted, String year_term){
-    	
-    	/*************CRN DUPLICATE CHECKING*****************/
-    	
-    	/*Json File for Duplicate Check - this definitely could be pared down*/
-    	byte[] encodedFile;
-    	String crnstring = "";
-    	byte[] encoded_duplicates;
-    	String duplicatestring = "";
-    	
-    	if(!Files.exists(Paths.get("crn.json")))
-    	{
-    		try {
-				Files.createFile(Paths.get("crn.json"));
-				FileWriter blankWrite = new FileWriter("crn.json", true);
-				PrintWriter blankWriter = new PrintWriter(blankWrite);
-				blankWriter.print("[]");
-				blankWriter.close();
-				blankWrite.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-    	}
-    	
-    	if(!Files.exists(Paths.get("duplicates.json")))
-    	{
-    		try {
-				Files.createFile(Paths.get("duplicates.json"));
-				FileWriter blankWrite = new FileWriter("duplicates.json", true);
-				PrintWriter blankWriter = new PrintWriter(blankWrite);
-				blankWriter.print("[]");
-				blankWriter.close();
-				blankWrite.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-    	}
-    	
-    	try {
-			encodedFile = Files.readAllBytes(Paths.get("crn.json"));
-			crnstring = new String(encodedFile, "UTF-8");
-			encoded_duplicates = Files.readAllBytes(Paths.get("duplicates.json"));
-			duplicatestring = new String(encoded_duplicates, "UTF-8");
-		} catch (IOException e1) {
-			System.out.println("failed to open crn json file");
-		}
-    	
-    	/**creating objects and arrays to write to**/
-    	JsonArray duplicates = new JsonParser().parse(duplicatestring).getAsJsonArray();
-    	JsonArray oldcrn = new JsonParser().parse(crnstring).getAsJsonArray();
-    	
-    	/**Writer**/
-    	Gson writer = new GsonBuilder().setPrettyPrinting().create();
-    	/****************************************************/
+  
     	
     	long start_time = System.nanoTime();
     	
@@ -273,16 +208,7 @@ public class ParseDoc implements Runnable{
             	i++;
             }
         	
-        	/*****Condition Checking for Duplicate CRNs*****/
-        	String crn = temp.courseInfo.get("crn");
-        	JsonElement crnEle = new JsonPrimitive(crn);
-        	if(oldcrn.contains(crnEle))
-        	{
-        		duplicates.add(new JsonPrimitive(temp.printInfo()));
-        	} else {
-        		oldcrn.add(crnEle);
-        	}
-    		/************************************************/
+
         	
         	
         	/**Pushing Course into queue**/
@@ -296,22 +222,6 @@ public class ParseDoc implements Runnable{
         	numClasses++;
         }
         
-
-        /****Duplicate Checking File Updates*****/
-        try {
-        	FileWriter crn_write = new FileWriter("crn.json");
-        	FileWriter dup_write = new FileWriter("duplicates.json");
-        	writer.toJson(oldcrn, crn_write);
-			writer.toJson(duplicates, dup_write);
-        	crn_write.flush();
-        	dup_write.flush();
-        	crn_write.close();
-        	dup_write.close();
-		} catch (JsonIOException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        /********End Duplicate Checking*********/
         
         
         /***time elapsed***/

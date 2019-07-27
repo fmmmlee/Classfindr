@@ -1,4 +1,4 @@
-package classfindr;
+package classfindr.Utility;
 /*
  * 
  * Matthew Lee
@@ -26,11 +26,7 @@ public class Course{
 	public final HashMap<String, String> courseInfo = new HashMap<String, String>();
 
 	
-	public Course(){}	//default constructor
-	
-	
-	
-	
+	public Course(){}	//default constructor	
 	
 	
 	/******* FOR LOCAL DATABASE *******/

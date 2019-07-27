@@ -1,4 +1,4 @@
-package classfindr;
+package classfindr.Utility;
 
 /*
  * 
