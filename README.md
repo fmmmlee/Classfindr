@@ -24,17 +24,15 @@
 - <a href="https://www.h2database.com">H2 DB</a>
 
 ## Current ToDo
-- Clean up overall application structure and file organization
 - Complete documentation and in-code comments
 - Write functions to read from DynamoDB/local database
-- Add config file to direct whether to write to local or AWS
 - Overhaul document parser; it's wildly overcomplicated for what it needs to do
 - Implement BatchWriteItem
-- Possibly spin more threads off of update_thread to more quickly upload the data
 - Add constraints for requests to WWU servers in a YAML or JSON
 - write script to run a build of this every so often to keep the database updated
 
 ### Completed ToDos:
+- Clean up overall application structure and file organization
 - Implement a metrics function with timers to analyze speed of different implementations
 - check AWS traffic tier limitations and check if requests need to be metered
 - Add writing to a local database instead of DynamoDB
