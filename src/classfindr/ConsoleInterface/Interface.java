@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import classfindr.Utility.Preferences;
+import classfindr.Threads.SharedData.Preferences;
+
 import static classfindr.Utility.Constants.*;
 
 public class Interface {

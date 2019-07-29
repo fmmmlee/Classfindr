@@ -1,4 +1,4 @@
-package classfindr.ExecutedThreads;
+package classfindr.Threads;
 /*
  * 
  * Matthew Lee
@@ -18,9 +18,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import classfindr.ConsoleInterface.Notifications;
-import classfindr.Utility.Course;
-import classfindr.Utility.Metric;
-import classfindr.Utility.ThreadShare;
+import classfindr.Threads.SharedData.Course;
+import classfindr.Threads.SharedData.RuntimeConfig;
+import classfindr.Utility.ProgramMetricsTracker;
 
 public class ParseDoc implements Runnable{
 
@@ -30,10 +30,10 @@ public class ParseDoc implements Runnable{
 	BlockingQueue<Integer> sizes;
 	AtomicBoolean calls_finished;
 	AtomicBoolean finished_parsing;
-	Metric thisMetric;
+	ProgramMetricsTracker thisMetric;
 	
 
-	public ParseDoc(ThreadShare shared)
+	public ParseDoc(RuntimeConfig shared)
 	{
 		unparsed = shared.unparsed;
 		calls_finished = shared.calls_finished;

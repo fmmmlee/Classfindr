@@ -1,4 +1,4 @@
-package classfindr.Utility;
+package classfindr.Threads.SharedData;
 
 /*
  * 

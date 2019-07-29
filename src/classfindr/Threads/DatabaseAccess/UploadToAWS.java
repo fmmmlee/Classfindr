@@ -1,4 +1,4 @@
-package classfindr.ExecutedThreads;
+package classfindr.Threads.DatabaseAccess;
 /*
  * 
  * Matthew Lee
@@ -31,9 +31,9 @@ import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 
 import classfindr.ConsoleInterface.Notifications;
-import classfindr.Utility.Metric;
-import classfindr.Utility.ThreadShare;
-import classfindr.Utility.Waiting_Indicators;
+import classfindr.ConsoleInterface.ProgressBarsEtc;
+import classfindr.Threads.SharedData.RuntimeConfig;
+import classfindr.Utility.ProgramMetricsTracker;
 
 import java.lang.Math.*;
 import java.io.File;
@@ -77,7 +77,7 @@ public class UploadToAWS implements Runnable{
 	static String currentTerm;
 	String table;
 	static boolean begun_bar;
-	Metric thisMetric;
+	ProgramMetricsTracker thisMetric;
 	
 	//TODO write interface for common AWS SDK functions, then implement here
 	
@@ -85,7 +85,7 @@ public class UploadToAWS implements Runnable{
 	//it's hacky, unnecessary and I need to change it at some point
 	
 	//NO BATCH SUPPORT IN THIS VERSION
-	public UploadToAWS(ThreadShare shared)
+	public UploadToAWS(RuntimeConfig shared)
 	{
 		upload_mode = shared.preferences.mode;
 		batch_mode = shared.batch_mode;
@@ -216,7 +216,7 @@ public class UploadToAWS implements Runnable{
                 job_progress++;
                 this_second++;
                 if(job_size.peek() != null){
-                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, HEADER, currentTerm);
+                	ProgressBarsEtc.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, HEADER, currentTerm);
                 	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {
@@ -237,7 +237,7 @@ public class UploadToAWS implements Runnable{
                 job_progress++;
                 this_second++;
                 if(job_size.peek() != null){
-                	Waiting_Indicators.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, HEADER, currentTerm);
+                	ProgressBarsEtc.progress_bar(SIZE, job_progress, job_size.peek(), begun_bar, HEADER, currentTerm);
                 	begun_bar = false;
                 }
             } catch (ResourceNotFoundException e) {

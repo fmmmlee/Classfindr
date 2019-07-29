@@ -1,4 +1,4 @@
-package classfindr.Utility;
+package classfindr.Threads.SharedData;
 /*
  * 
  * Matthew Lee
@@ -21,13 +21,15 @@ import org.jsoup.nodes.Document;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
+import classfindr.Utility.ProgramMetricsTracker;
+
 import static classfindr.Utility.Constants.*;
 /**
  *
  * Object shared between various different threads that holds variables and other objects used by them, often concurrently
  *
  */
-public class ThreadShare {
+public class RuntimeConfig {
 		
 	/** output of CallServer/input of ParseDoc */
 	public BlockingQueue<Document> unparsed = new LinkedBlockingQueue<Document>();
@@ -63,7 +65,7 @@ public class ThreadShare {
 	public AtomicBoolean batch_mode = new AtomicBoolean(false);
 	
 	/** object that holds execution stats and information */
-	public Metric metric;
+	public ProgramMetricsTracker metric;
 
 	/** run preferences */
 	public Preferences preferences;
@@ -75,10 +77,10 @@ public class ThreadShare {
 	 * @param terms_in array of strings showing all terms being processed (sets local variable terms)
 	 * @param table_in name of table in destination database (sets local variable table)
 	 */
-	public ThreadShare(Preferences preferences)
+	public RuntimeConfig(Preferences preferences)
 	{
 		this.preferences = preferences;
-		metric = new Metric(preferences);
+		metric = new ProgramMetricsTracker(preferences);
 		
 		/* initializing queues depending on specified mode */
 		switch(preferences.database)

@@ -1,4 +1,4 @@
-package classfindr.Utility;
+package classfindr.ConsoleInterface;
 
 /*
  * 
@@ -13,8 +13,7 @@ package classfindr.Utility;
 import org.apache.commons.lang3.StringUtils;
 
 
-//TODO: make the progress bar portable and put it in this class
-public class Waiting_Indicators {
+public class ProgressBarsEtc {
 
 	static final String ERR = "[" + (char)27 + "[31mERROR" + (char)27 + "[39m] ";
 	static final String SYSMSG = "[" + (char)27 + "[34mINFO" + (char)27 + "[39m] ";

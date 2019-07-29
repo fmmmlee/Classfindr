@@ -13,7 +13,7 @@ target/**
 *.log
 *.html
 *.json
+*.mv.db
 /target**
 /doc**
 /testhtml**
-/data**

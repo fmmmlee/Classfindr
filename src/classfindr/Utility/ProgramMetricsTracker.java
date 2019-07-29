@@ -13,13 +13,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import classfindr.Threads.SharedData.Preferences;
+
 /**
  * A class to store information about the program's current execution.
  * 
  * @author Matthew Lee
  *
  */
-public class Metric {
+public class ProgramMetricsTracker {
 	long call_time;
 	long conversion_time;
 	long parse_time;
@@ -33,7 +35,7 @@ public class Metric {
 	String databaseType;
 	 
 	/* constructor */
-	public Metric(Preferences preferences)
+	public ProgramMetricsTracker(Preferences preferences)
 	{
 		table = preferences.table;
 		uploadMode = preferences.modeStr();

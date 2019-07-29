@@ -1,4 +1,4 @@
-package classfindr.Utility;
+package classfindr.Threads.DatabaseAccess;
 
 import java.sql.Connection;
 import java.sql.SQLException;

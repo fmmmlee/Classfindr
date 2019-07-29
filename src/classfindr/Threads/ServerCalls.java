@@ -1,4 +1,4 @@
-package classfindr.ExecutedThreads;
+package classfindr.Threads;
 /*
  * 
  * Matthew Lee
@@ -18,8 +18,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import classfindr.ConsoleInterface.Notifications;
-import classfindr.Utility.Metric;
-import classfindr.Utility.ThreadShare;
+import classfindr.Threads.SharedData.RuntimeConfig;
+import classfindr.Utility.ProgramMetricsTracker;
 
 
 
@@ -41,16 +41,16 @@ public class ServerCalls implements Runnable{
     private static final String COOKIE = "TESTID=SET";
     private static final String INSECURE_REQS = "1";
     static String[] terms;
-    static Metric info;
+    static ProgramMetricsTracker info;
     BlockingQueue<Document> parsed_docs;
-    ThreadShare for_document;
+    RuntimeConfig for_document;
     AtomicBoolean finished;
     
     /*
      * 
      * @param	shared	an object of the ThreadShare class that holds information used by this class as well as other classes during concurrent execution.
      */
-    public ServerCalls(ThreadShare shared)
+    public ServerCalls(RuntimeConfig shared)
     {
     	finished = shared.calls_finished;
     	terms = shared.preferences.terms;

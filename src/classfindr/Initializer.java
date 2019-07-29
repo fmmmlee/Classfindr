@@ -17,17 +17,18 @@ import java.util.concurrent.ExecutionException;
 
 import classfindr.ConsoleInterface.Interface;
 import classfindr.ConsoleInterface.Notifications;
-import classfindr.ExecutedThreads.AccessLocalDB;
-import classfindr.ExecutedThreads.CourseConverter;
-import classfindr.ExecutedThreads.ParseDoc;
-import classfindr.ExecutedThreads.ServerCalls;
-import classfindr.ExecutedThreads.UploadToAWS;
-import classfindr.Utility.Preferences;
-import classfindr.Utility.ThreadShare;
+import classfindr.Threads.CourseConverter;
+import classfindr.Threads.ParseDoc;
+import classfindr.Threads.ServerCalls;
+import classfindr.Threads.DatabaseAccess.AccessLocalDB;
+import classfindr.Threads.DatabaseAccess.UploadToAWS;
+import classfindr.Threads.SharedData.Preferences;
+import classfindr.Threads.SharedData.RuntimeConfig;
 
 import static classfindr.Utility.Constants.*;
 
 //TODO: If one thread throws an exception, cease execution on the others and give an error message and exit properly
+//TODO: improve names (particularly ThreadShare/share/shared etc.)
 public class Initializer {
 	
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException
@@ -38,7 +39,7 @@ public class Initializer {
 		Interface.setprefs(preferences);
 		
 		/* initializing shared data object */
-		final ThreadShare share = new ThreadShare(preferences);
+		final RuntimeConfig share = new RuntimeConfig(preferences);
 		
 		/* calling WWU servers on new thread */
 		ServerCalls call = new ServerCalls(share);

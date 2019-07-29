@@ -1,4 +1,4 @@
-package classfindr.ExecutedThreads;
+package classfindr.Threads.DatabaseAccess;
 
 /*
  * 
@@ -19,10 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.h2.jdbcx.JdbcDataSource;
 
 import classfindr.ConsoleInterface.Notifications;
-import classfindr.Utility.LocalDBTools;
-import classfindr.Utility.Metric;
-import classfindr.Utility.ThreadShare;
-import classfindr.Utility.Waiting_Indicators;
+import classfindr.ConsoleInterface.ProgressBarsEtc;
+import classfindr.Threads.SharedData.RuntimeConfig;
+import classfindr.Utility.ProgramMetricsTracker;
 
 public class AccessLocalDB implements Runnable
 {
@@ -49,7 +48,7 @@ public class AccessLocalDB implements Runnable
 	AtomicBoolean finished_converting;	//indicates if converter thread has finished
 	
 	/* Metrics */
-	Metric thisMetric;				//shared metric object, used to record upload stats
+	ProgramMetricsTracker thisMetric;				//shared metric object, used to record upload stats
 	long uploadStartTime; 			//records start time
 	long startOfSec;				//records beginning of current second being measured
 	double handledCurSec; 			//tracking statements processed in the current second
@@ -58,7 +57,7 @@ public class AccessLocalDB implements Runnable
 	
 		
 	/* constructor */
-	public AccessLocalDB(ThreadShare shared)
+	public AccessLocalDB(RuntimeConfig shared)
 	{
 		incomingQueries = shared.get_localQueue();
 		terms = shared.preferences.terms;
@@ -138,7 +137,7 @@ public class AccessLocalDB implements Runnable
 		newstatement = db_conn.createStatement();
 		newstatement.execute(incomingQueries.poll());
 		jobProgress++;
-		Waiting_Indicators.progress_bar(pbar_size, jobProgress, jobSizes.peek(), !begun_bar, pbar_header, currentTerm);
+		ProgressBarsEtc.progress_bar(pbar_size, jobProgress, jobSizes.peek(), !begun_bar, pbar_header, currentTerm);
 		begun_bar = true;
 		handledCurSec++;
 	}

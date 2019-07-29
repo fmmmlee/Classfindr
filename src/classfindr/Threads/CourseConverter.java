@@ -1,4 +1,4 @@
-package classfindr.ExecutedThreads;
+package classfindr.Threads;
 /*
  * 
  * Matthew Lee
@@ -17,9 +17,9 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 
 import classfindr.ConsoleInterface.Notifications;
-import classfindr.Utility.Course;
-import classfindr.Utility.Metric;
-import classfindr.Utility.ThreadShare;
+import classfindr.Threads.SharedData.Course;
+import classfindr.Threads.SharedData.RuntimeConfig;
+import classfindr.Utility.ProgramMetricsTracker;
 
 import static classfindr.Utility.Constants.*;
 
@@ -43,12 +43,12 @@ public class CourseConverter implements Runnable {
 	AtomicBoolean parse_finished;
 	
 	/* shared metric - this thread contributes conversion time */
-	Metric thisMetric;
+	ProgramMetricsTracker thisMetric;
 	
 	String table_name;
 	
 	/* constructor */
-	public CourseConverter(ThreadShare shared)
+	public CourseConverter(RuntimeConfig shared)
 	{
 		local_output = shared.get_localQueue();
 		destination = shared.preferences.database;
